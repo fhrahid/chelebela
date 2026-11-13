@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ALL_QUESTIONS_COUNT, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, getEraSet, mulberry32, sampleQuiz, setPool } from "../lib/quiz";
+import { ALL_QUESTIONS_COUNT, answeredTooFast, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, getEraSet, mulberry32, sampleQuiz, setPool } from "../lib/quiz";
 import { DEFAULT_DATASET, ITEMS } from "../lib/data";
 
 describe("era sets", () => {
@@ -21,6 +21,12 @@ describe("era sets", () => {
 });
 
 describe("random sampling", () => {
+  it("detects five-question answer bursts without flagging a considered pace", () => {
+    expect(answeredTooFast([0, 410, 830, 1220, 1700])).toBe(true);
+    expect(answeredTooFast([0, 900, 1800, 2700, 3600])).toBe(false);
+    expect(answeredTooFast([0, 300, 600, 900])).toBe(false);
+  });
+
   it("returns the requested number of unique items from each set pool", () => {
     for (const set of ERA_SETS) {
       const { items, ids } = sampleQuiz(set.id, ITEMS, DEFAULT_QUIZ_LENGTH);

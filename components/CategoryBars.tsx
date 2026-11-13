@@ -8,7 +8,7 @@ export default function CategoryBars({ stats }: { stats: CategoryStat[] }) {
     <ul className="space-y-3">
       {visible.map((s) => (
         <li key={s.category_id} className="flex items-center gap-3">
-          <span className="w-28 shrink-0 text-sm font-semibold">{s.name_bn}</span>
+          <span className="w-24 shrink-0 text-xs font-semibold sm:w-28 sm:text-sm">{s.name_bn}</span>
           <span className="h-4 flex-1 overflow-hidden rounded-full border-2 border-ink/60 bg-ink/10">
             {s.share === null ? null : (
               <span
@@ -17,10 +17,10 @@ export default function CategoryBars({ stats }: { stats: CategoryStat[] }) {
               />
             )}
           </span>
-          <span className="w-12 text-right font-display text-sm font-bold">
+          <span className="w-10 shrink-0 text-right font-display text-xs font-bold sm:w-12 sm:text-sm">
             {s.share === null ? "—" : toBnPct(s.share)}
           </span>
-          <span className="w-14 text-right text-xs text-ink-soft">
+          <span className="w-12 shrink-0 text-right text-[10px] text-ink-soft sm:w-14 sm:text-xs">
             {toBn(s.experienced)}/{toBn(s.applicable || 0)}
           </span>
         </li>

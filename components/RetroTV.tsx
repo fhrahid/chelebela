@@ -360,7 +360,7 @@ function Knob({
       onPointerDown={onPointerDown}
       onClick={onClick}
       onWheel={onWheel}
-      className="relative h-10 w-10 cursor-grab touch-none rounded-full border-2 border-ink bg-brass shadow-hard-sm transition-transform active:cursor-grabbing active:scale-95"
+      className="relative h-11 w-11 cursor-grab touch-none rounded-full border-2 border-ink bg-brass shadow-hard-sm transition-transform active:cursor-grabbing active:scale-95"
     >
       <span
         className="absolute inset-0 transition-transform duration-200"

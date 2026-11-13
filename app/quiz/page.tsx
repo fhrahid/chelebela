@@ -15,7 +15,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, ChevronDown, Home, X } from "lucide-react";
 import AlponaFlower from "@/components/AlponaFlower";
 import { CONTENT_REVIEW_NOTE, DEFAULT_DATASET, TOTAL_ITEMS } from "@/lib/data";
-import { ALL_QUESTIONS_COUNT, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, getEraSet, sampleQuiz, setPool } from "@/lib/quiz";
+import { ALL_QUESTIONS_COUNT, answeredTooFast, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, getEraSet, sampleQuiz, setPool } from "@/lib/quiz";
 import { quizStorage } from "@/lib/storage";
 import { toBn, toBnFraction } from "@/lib/bn";
 import type { MemoryItem, ResponseValue, Responses } from "@/lib/types";
@@ -41,8 +41,12 @@ function QuizFlow() {
   const [index, setIndex] = useState(0);
   const [questionCount, setQuestionCount] = useState(DEFAULT_QUIZ_LENGTH);
   const [confirmExit, setConfirmExit] = useState(false);
+  const [speedCheck, setSpeedCheck] = useState(false);
+  const [transitioning, setTransitioning] = useState(false);
   const [pop, setPop] = useState(false);
   const submittingRef = useRef(false);
+  const answerLockRef = useRef(false);
+  const answerTimesRef = useRef<number[]>([]);
 
   const startSet = useCallback((id: string, count: number) => {
     const seen = [...new Set(Object.values(quizStorage.loadSeenIds()).flat())];
@@ -54,6 +58,10 @@ function QuizFlow() {
     setQuestionCount(count);
     setPhase("quiz");
     submittingRef.current = false;
+    answerLockRef.current = false;
+    answerTimesRef.current = [];
+    setSpeedCheck(false);
+    setTransitioning(false);
     quizStorage.clearProgress();
     window.scrollTo({ top: 0 });
   }, []);
@@ -81,7 +89,10 @@ function QuizFlow() {
 
   const answer = useCallback(
     (value: ResponseValue) => {
-      if (!current || !setId || submittingRef.current) return;
+      if (!current || !setId || submittingRef.current || answerLockRef.current) return;
+      answerLockRef.current = true;
+      setTransitioning(true);
+      const isFirstAnswerForItem = responses[current.item_id] === undefined;
       const nextResponses = { ...responses, [current.item_id]: value };
       setResponses(nextResponses);
       quizStorage.addSeenIds(setId, [current.item_id]);
@@ -99,7 +110,26 @@ function QuizFlow() {
           router.push("/result");
         }, 320);
       } else {
-        setTimeout(() => setIndex((i) => Math.min(total - 1, i + 1)), 220);
+        let promptToSlowDown = false;
+        if (isFirstAnswerForItem) {
+          const now = performance.now();
+          answerTimesRef.current.push(now);
+          if (answerTimesRef.current.length === 5) {
+            promptToSlowDown = answeredTooFast(answerTimesRef.current);
+            answerTimesRef.current = [];
+          }
+        }
+
+        if (promptToSlowDown) {
+          setSpeedCheck(true);
+          return;
+        }
+
+        setTimeout(() => {
+          setIndex((i) => Math.min(total - 1, i + 1));
+          answerLockRef.current = false;
+          setTransitioning(false);
+        }, 260);
       }
     },
     [current, responses, setId, quizItems, total, router]
@@ -117,8 +147,9 @@ function QuizFlow() {
           <button
             type="button"
             onClick={() => (answered > 0 ? setConfirmExit(true) : setPhase("select"))}
+            disabled={transitioning}
             aria-label="ক্যাসেট বদলাও"
-            className="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-ink bg-paper-card"
+            className="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-ink bg-paper-card disabled:opacity-50"
           >
             <X className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -156,7 +187,7 @@ function QuizFlow() {
       {/* question card */}
       {current ? (
         <div key={current.item_id} className="card-enter mt-6">
-          <QuestionCard item={current} selected={responses[current.item_id]} onAnswer={answer} pop={pop} />
+          <QuestionCard item={current} selected={responses[current.item_id]} onAnswer={answer} pop={pop} disabled={transitioning} />
         </div>
       ) : null}
 
@@ -165,7 +196,7 @@ function QuizFlow() {
         <button
           type="button"
           onClick={() => setIndex((i) => Math.max(0, i - 1))}
-          disabled={index === 0}
+          disabled={index === 0 || transitioning}
           className="flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-ink bg-paper-card px-4 py-2 text-sm font-bold shadow-hard-sm disabled:opacity-40"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" /> আগেরটা
@@ -211,6 +242,41 @@ function QuizFlow() {
                 হ্যাঁ, বদলাও
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {speedCheck && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/60 p-4 sm:items-center">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="speed-check-title"
+            className="w-full max-w-md rounded-2xl border-2 border-ink bg-paper-card p-5 shadow-hard-lg"
+          >
+            <div className="flex items-center gap-3">
+              <AlponaFlower size={34} petal="#E1463E" center="#F9BB29" />
+              <h2 id="speed-check-title" className="font-display text-lg font-extrabold">
+                একটু থেমে স্মৃতিটা মনে করি?
+              </h2>
+            </div>
+            <p className="mt-3 text-sm leading-relaxed text-ink-soft">
+              ঠিকমতো পড়ে উত্তর দিচ্ছ তো? পাঁচটা উত্তর খুব তাড়াতাড়ি হয়ে গেল—প্রতিটা স্মৃতি মনে করে উত্তর দিলে ফলটা আরও মজার হবে।
+            </p>
+            <button
+              type="button"
+              autoFocus
+              onClick={() => {
+                setSpeedCheck(false);
+                answerTimesRef.current = [];
+                setIndex((i) => Math.min(total - 1, i + 1));
+                answerLockRef.current = false;
+                setTransitioning(false);
+              }}
+              className="mt-4 min-h-12 w-full rounded-xl border-2 border-ink bg-marigold px-5 py-3 font-display font-bold shadow-hard-sm"
+            >
+              হ্যাঁ, পড়ে উত্তর দিচ্ছি
+            </button>
           </div>
         </div>
       )}
@@ -272,7 +338,7 @@ function SetSelect({
                     <span className="h-2.5 w-2.5 rounded-full border border-ink" style={{ backgroundColor: s.color }} />
                     <span className="h-2.5 w-2.5 rounded-full border border-ink" style={{ backgroundColor: s.color }} />
                   </div>
-                  <span className="text-[10px] font-bold text-ink-soft">সাইড আ</span>
+                  <span className="text-[10px] font-bold text-ink-soft">পিঠ ১</span>
                 </div>
                 <div className="mt-2 rounded-lg border-2 border-ink bg-brand-deep py-2 text-center">
                   <span className="font-display text-xl font-extrabold text-marigold">{s.label_bn}</span>
@@ -300,11 +366,13 @@ function QuestionCard({
   selected,
   onAnswer,
   pop,
+  disabled,
 }: {
   item: MemoryItem;
   selected: ResponseValue | undefined;
   onAnswer: (v: ResponseValue) => void;
   pop: boolean;
+  disabled: boolean;
 }) {
   const [openDesc, setOpenDesc] = useState(false);
   return (
@@ -347,6 +415,7 @@ function QuestionCard({
           hint="সত্যিই এটা আমার হয়েছে"
           icon={<span className="text-2xl" aria-hidden="true">✓</span>}
           classes="bg-leaf text-paper"
+          disabled={disabled}
         />
         <AnswerButton
           value="not_experienced"
@@ -356,6 +425,7 @@ function QuestionCard({
           hint="এটা আমার হয়নি"
           icon={<span className="text-2xl" aria-hidden="true">✕</span>}
           classes="bg-brick text-paper"
+          disabled={disabled}
         />
         <AnswerButton
           value="not_applicable"
@@ -365,6 +435,7 @@ function QuestionCard({
           hint="আমার জীবনে আসার কথাই নয়"
           icon={<span className="text-2xl" aria-hidden="true">–</span>}
           classes="bg-tan text-ink"
+          disabled={disabled}
         />
       </div>
     </article>
@@ -379,6 +450,7 @@ function AnswerButton({
   hint,
   icon,
   classes,
+  disabled,
 }: {
   value: ResponseValue;
   selected: ResponseValue | undefined;
@@ -387,14 +459,16 @@ function AnswerButton({
   hint: string;
   icon: React.ReactNode;
   classes: string;
+  disabled: boolean;
 }) {
   const active = selected === value;
   return (
     <button
       type="button"
       aria-pressed={active}
+      disabled={disabled}
       onClick={() => onClick(value)}
-      className={`flex min-h-14 items-center gap-3 rounded-xl border-2 px-4 py-3 text-left transition-transform active:scale-[0.98] ${
+      className={`flex min-h-14 items-center gap-3 rounded-xl border-2 px-4 py-3 text-left transition-transform active:scale-[0.98] disabled:cursor-wait disabled:opacity-75 ${
         active ? `${classes} border-ink shadow-hard-sm` : "border-ink/30 bg-paper-soft hover:border-ink/70"
       }`}
     >

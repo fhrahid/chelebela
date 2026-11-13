@@ -18,7 +18,7 @@ import Reveal from "@/components/Reveal";
 import { CONTENT_REVIEW_NOTE, DEFAULT_DATASET } from "@/lib/data";
 import { computeResult } from "@/lib/scoring";
 import { getEraSet } from "@/lib/quiz";
-import { eraArtFor } from "@/lib/era-art";
+import { randomEraArt, type EraArt } from "@/lib/era-art";
 import { quizStorage } from "@/lib/storage";
 import { toBn, toBnPct } from "@/lib/bn";
 import type { Responses } from "@/lib/types";
@@ -30,6 +30,7 @@ export default function ResultPage() {
   const [setId, setSetId] = useState<string | undefined>(undefined);
   const [pendingCompare, setPendingCompare] = useState<string | null>(null);
   const [displayScore, setDisplayScore] = useState(0);
+  const [resultArt, setResultArt] = useState<EraArt | null>(null);
 
   useEffect(() => {
     const stored = quizStorage.loadResult();
@@ -37,6 +38,9 @@ export default function ResultPage() {
       setResponses(stored.responses);
       setAskedIds(stored.askedIds);
       setSetId(stored.setId);
+      const storedResult = computeResult(stored.responses, DEFAULT_DATASET, { askedItemIds: stored.askedIds });
+      const leadingEra = storedResult.eraProfile[0]?.era_id ?? getEraSet(stored.setId)?.era;
+      setResultArt(randomEraArt(leadingEra));
     }
     const pending = quizStorage.loadPendingCompare();
     if (pending) setPendingCompare(pending.payload);
@@ -95,7 +99,7 @@ export default function ResultPage() {
 
   const set = getEraSet(setId);
   const dominantEra = result.eraProfile[0]?.era_id ?? set?.era;
-  const eraArt = eraArtFor(dominantEra);
+  const eraArt = resultArt;
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-16 pt-6">
@@ -124,7 +128,7 @@ export default function ResultPage() {
           তোমার ছেলেবেলা স্কোর
           <AlponaFlower size={22} petal="#298265" center="#F9BB29" />
         </p>
-        <p className="score-pop mt-2 font-display text-7xl font-extrabold leading-none text-brand" aria-label={`স্কোর ${toBnPct(finalScore)}`}>
+        <p className="score-pop mt-2 font-display text-6xl font-extrabold leading-[1.2] text-brand sm:text-7xl" aria-label={`স্কোর ${toBnPct(finalScore)}`}>
           {toBnPct(displayScore)}
         </p>
         <h1 className="mt-3 font-display text-2xl font-extrabold">{result.label.title_bn}</h1>
@@ -217,6 +221,7 @@ export default function ResultPage() {
           </h2>
           <CassetteCard
             result={result}
+            art={eraArt}
             dominantEra={dominantEra}
             dominantEraLabel={result.eraProfile[0]?.label_bn ?? set?.label_bn}
           />

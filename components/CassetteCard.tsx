@@ -8,7 +8,7 @@
 import type { QuizResult } from "@/lib/types";
 import { toBn, toBnPct } from "@/lib/bn";
 import Image from "next/image";
-import { eraArtFor } from "@/lib/era-art";
+import type { EraArt } from "@/lib/era-art";
 
 const ERA_COLORS: Record<string, string> = {
   "80s": "var(--color-brass)",
@@ -19,20 +19,21 @@ const ERA_COLORS: Record<string, string> = {
 
 export default function CassetteCard({
   result,
+  art,
   cardId = "result-card",
   dominantEra,
   dominantEraLabel,
 }: {
   result: QuizResult;
+  art: EraArt | null;
   cardId?: string;
   dominantEra?: string;
   dominantEraLabel?: string;
 }) {
-  const art = eraArtFor(result.eraProfile[0]?.era_id ?? dominantEra);
   return (
     <div
       id={cardId}
-      className="relative w-[320px] select-none rounded-2xl border-4 border-ink bg-paper-card p-4 shadow-hard-lg sm:w-[340px]"
+      className="relative w-full min-w-0 max-w-[340px] select-none rounded-2xl border-4 border-ink bg-paper-card p-3 shadow-hard-lg sm:p-4"
       role="img"
       aria-label={`ছেলেবেলা স্কোর কার্ড: ${toBnPct(result.overallScore)}, ${result.label.title_bn}`}
     >
@@ -79,7 +80,7 @@ export default function CassetteCard({
         </div>
         <div className="relative z-10 text-center">
           <p className="text-[11px] font-semibold text-paper/80">আমার স্কোর</p>
-          <p className="font-display text-6xl font-extrabold leading-none text-marigold drop-shadow-[3px_3px_0_rgba(0,0,0,0.55)]">
+          <p className="font-display text-5xl font-extrabold leading-[1.2] text-marigold drop-shadow-[3px_3px_0_rgba(0,0,0,0.55)] sm:text-6xl">
             {toBnPct(result.overallScore)}
           </p>
           <p className="mt-2 font-display text-xl font-bold text-paper">{result.label.title_bn}</p>
@@ -115,7 +116,7 @@ export default function CassetteCard({
       </div>
 
       {/* footer */}
-      <div className="mt-4 flex items-center justify-between border-t-2 border-dashed border-ink/30 pt-2 text-[10px] text-ink-soft">
+      <div className="mt-4 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 border-t-2 border-dashed border-ink/30 pt-2 text-center text-[10px] text-ink-soft">
         <span>{toBn(result.experiencedCount)}/{toBn(result.totalItems)}টি পেরেছ · কাঁচা {toBnPct(result.rawScore)}</span>
         <span>chhelebela-score</span>
       </div>

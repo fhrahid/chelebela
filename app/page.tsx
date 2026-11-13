@@ -147,7 +147,7 @@ export default function LandingPage() {
                       <span className="h-2.5 w-2.5 rounded-full border border-ink" style={{ backgroundColor: set.color }} />
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-ink-soft">সাইড আ</span>
+                      <span className="text-[10px] font-bold text-ink-soft">পিঠ ১</span>
                       <AlponaFlower
                         size={27}
                         petal={set.id === "80s" ? "#543C22" : set.id === "90s" ? "#E1463E" : set.id === "2000s" ? "#298265" : "#F35887"}

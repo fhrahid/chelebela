@@ -19,6 +19,11 @@ export const ALL_QUESTIONS_COUNT = -1;
 /** Question-count choices shown before starting a quiz. */
 export const COUNT_OPTIONS = [5, 10, 15, 20, 30, 50, 80, ALL_QUESTIONS_COUNT] as const;
 
+/** Prompt a gentle read-carefully reminder when a five-answer batch is rushed. */
+export function answeredTooFast(timestamps: number[], thresholdMs = 3000): boolean {
+  return timestamps.length >= 5 && timestamps[timestamps.length - 1] - timestamps[0] < thresholdMs;
+}
+
 export interface EraSet {
   id: string;
   label_bn: string;
