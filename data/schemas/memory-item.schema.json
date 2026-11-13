@@ -1,0 +1,83 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "chhelebela/schemas/memory-item.schema.json",
+  "title": "Chhelebela Score memory item",
+  "description": "One childhood-memory checklist item. Mirrors SRS §9.1 fields; editorial fields (evidence_bn, region_notes_bn, review_notes_bn) are for the content team and must not be required by UI components. Controlled values are governed by vocabulary.json / eras.json / categories.json.",
+  "type": "object",
+  "required": [
+    "item_id",
+    "title_bn",
+    "category_id",
+    "era_tags",
+    "era_scope",
+    "classification_confidence",
+    "setting_tags",
+    "popularity_period_bd",
+    "weight",
+    "era_classification_eligible",
+    "validation_status",
+    "source_references",
+    "flags"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "item_id": { "type": "string", "pattern": "^MEM_[0-9]{3}$" },
+    "title_bn": { "type": "string", "minLength": 1, "description": "Bangla display sentence (SRS title_bn)." },
+    "title_en": { "type": ["string", "null"], "description": "Optional English/transliterated title." },
+    "description_bn": { "type": ["string", "null"], "description": "Optional user-facing disambiguation (SRS description). Null when no evidence-based wording exists yet." },
+    "category_id": { "type": "string", "enum": ["tv", "books", "games", "food", "music_eid", "school", "tech_gaming", "cricket_moments", "family_community", "festival", "collectibles", "animals", "culture", "entertainment", "nature", "communication", "social", "sports", "travel", "lifestyle"] },
+    "era_tags": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "enum": ["80s", "90s", "2000s", "neutral"] },
+      "description": "Ordered ascending. 'neutral' must appear alone."
+    },
+    "era_scope": { "type": "string", "enum": ["single", "multi"] },
+    "classification_confidence": { "type": "string", "enum": ["verified", "probable", "uncertain"] },
+    "setting_tags": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string", "enum": ["urban", "rural", "both", "context_specific", "unknown"] }
+    },
+    "source_setting": {
+      "type": ["string", "null"],
+      "description": "Raw setting value from the 2026-11-14 batch (the column held locations/access descriptors). Preserved verbatim; the normalized value is in setting_tags (FLG-DS-18)."
+    },
+    "origin_period": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["label_bn"],
+          "additionalProperties": false,
+          "properties": {
+            "from": { "type": ["string", "null"], "description": "Loose year/decade string, e.g. '1993', 'mid-1980s'." },
+            "to": { "type": ["string", "null"] },
+            "label_bn": { "type": "string", "minLength": 1 }
+          }
+        }
+      ],
+      "description": "When the thing itself first appeared/was introduced. Null when unverified — NEVER guess (SRS 6.5)."
+    },
+    "popularity_period_bd": {
+      "type": "object",
+      "required": ["label_bn"],
+      "additionalProperties": false,
+      "properties": {
+        "from": { "type": ["string", "null"] },
+        "to": { "type": ["string", "null"] },
+        "label_bn": { "type": "string", "minLength": 1 }
+      },
+      "description": "When it was meaningfully popular/experienced in Bangladesh. Distinct from origin_period by design."
+    },
+    "weight": { "type": "number", "minimum": 0, "default": 1.0 },
+    "era_classification_eligible": { "type": "boolean", "description": "Whether the item may feed era-affinity calculations (SRS §6.3, OD-05)." },
+    "validation_status": { "type": "string", "enum": ["draft", "under_review", "verified", "disputed", "retired"] },
+    "last_reviewed": { "type": ["string", "null"], "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "source_references": { "type": "array", "items": { "type": "string", "pattern": "^R[0-9]+$" } },
+    "evidence_bn": { "type": "string", "description": "Editor-facing evidence summary from the source sheet." },
+    "region_notes_bn": { "type": "string" },
+    "review_notes_bn": { "type": "string" },
+    "flags": { "type": "array", "items": { "type": "string", "pattern": "^FLG-" } }
+  }
+}

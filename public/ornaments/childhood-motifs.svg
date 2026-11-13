@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 220" fill="none">
+  <!-- Original nostalgia still-life: cassette, kite, marbles and flowers. -->
+  <g opacity=".57" stroke="#1C2429" stroke-width="3" stroke-linejoin="round">
+    <!-- cassette -->
+    <g transform="rotate(-8 93 117)">
+      <rect x="23" y="69" width="142" height="96" rx="13" fill="#E1463E"/>
+      <rect x="38" y="86" width="112" height="49" rx="8" fill="#F7EAD0"/>
+      <circle cx="66" cy="110" r="14" fill="#21534D"/>
+      <circle cx="122" cy="110" r="14" fill="#21534D"/>
+      <circle cx="66" cy="110" r="5" fill="#F9BB29"/>
+      <circle cx="122" cy="110" r="5" fill="#F9BB29"/>
+      <path d="M67 137h54l-9 14H76l-9-14Z" fill="#D4A66C"/>
+      <path d="M45 78h96" stroke="#F9BB29" stroke-width="5"/>
+    </g>
+
+    <!-- diamond kite -->
+    <g transform="translate(224 22) rotate(12 48 50)">
+      <path d="M47 5 91 48 47 91 4 48 47 5Z" fill="#F35887"/>
+      <path d="M47 5v86M4 48h87" stroke="#F9BB29" stroke-width="3"/>
+      <path d="M47 91c23 20-13 25 10 43-22 12 6 18-10 31" stroke="#1C2429" stroke-width="2"/>
+      <path d="m47 105 9 6-8 7-7-6 6-7Zm0 23 8 6-9 6-7-6 8-6Z" fill="#298265"/>
+    </g>
+
+    <!-- marbles -->
+    <circle cx="213" cy="176" r="17" fill="#298265"/>
+    <circle cx="253" cy="176" r="17" fill="#F9BB29"/>
+    <circle cx="293" cy="176" r="17" fill="#E1463E"/>
+    <circle cx="208" cy="170" r="4" fill="#F7EAD0" stroke="none"/>
+    <circle cx="248" cy="170" r="4" fill="#F7EAD0" stroke="none"/>
+    <circle cx="288" cy="170" r="4" fill="#F7EAD0" stroke="none"/>
+
+    <!-- small folk-flower stamp -->
+    <g transform="translate(321 43)">
+      <g fill="#F9BB29">
+        <ellipse cy="-13" rx="5" ry="11"/><ellipse cy="-13" rx="5" ry="11" transform="rotate(60)"/>
+        <ellipse cy="-13" rx="5" ry="11" transform="rotate(120)"/><ellipse cy="-13" rx="5" ry="11" transform="rotate(180)"/>
+        <ellipse cy="-13" rx="5" ry="11" transform="rotate(240)"/><ellipse cy="-13" rx="5" ry="11" transform="rotate(300)"/>
+      </g>
+      <circle r="6" fill="#B15853"/>
+    </g>
+  </g>
+</svg>

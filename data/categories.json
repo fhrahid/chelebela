@@ -1,0 +1,196 @@
+{
+  "$comment": "Controlled category vocabulary. Category ids follow SRS FR-003 and the idea-proposal channels. 'family_community' is an extension found in the spreadsheet (FAMILY) that is not in the SRS channel list — kept as-is rather than silently re-filed; see FLG-DS-04. 'maps_from' documents the original spreadsheet value each id replaces.",
+  "schema_version": "1.0.0",
+  "categories": [
+    {
+      "category_id": "tv",
+      "name_bn": "টিভি",
+      "name_en": "TV",
+      "display_order": 1,
+      "maps_from": [
+        "TV"
+      ],
+      "item_count": 26
+    },
+    {
+      "category_id": "books",
+      "name_bn": "বই",
+      "name_en": "Books",
+      "display_order": 2,
+      "maps_from": [
+        "BOOKS"
+      ],
+      "item_count": 8
+    },
+    {
+      "category_id": "games",
+      "name_bn": "খেলা",
+      "name_en": "Games",
+      "display_order": 3,
+      "maps_from": [
+        "PLAY"
+      ],
+      "item_count": 39
+    },
+    {
+      "category_id": "food",
+      "name_bn": "খাবার",
+      "name_en": "Food",
+      "display_order": 4,
+      "maps_from": [
+        "FOOD"
+      ],
+      "item_count": 22
+    },
+    {
+      "category_id": "music_eid",
+      "name_bn": "গান ও ঈদ",
+      "name_en": "Music & Eid",
+      "display_order": 5,
+      "maps_from": [
+        "MUSIC"
+      ],
+      "item_count": 2,
+      "note": "No Eid item sits here yet — the Eid-card memory is filed under family_community (FLG-DS-04)."
+    },
+    {
+      "category_id": "school",
+      "name_bn": "স্কুল",
+      "name_en": "School",
+      "display_order": 6,
+      "maps_from": [
+        "SCHOOL"
+      ],
+      "item_count": 27
+    },
+    {
+      "category_id": "tech_gaming",
+      "name_bn": "টেকনোলজি ও গেমিং",
+      "name_en": "Tech & Gaming",
+      "display_order": 7,
+      "maps_from": [
+        "TECH"
+      ],
+      "item_count": 11
+    },
+    {
+      "category_id": "cricket_moments",
+      "name_bn": "ক্রিকেট মুহূর্ত",
+      "name_en": "Cricket Moments",
+      "display_order": 8,
+      "maps_from": [],
+      "item_count": 0,
+      "note": "Planned SRS/proposal channel with zero items in the current dataset — see FLG-DS-09."
+    },
+    {
+      "category_id": "family_community",
+      "name_bn": "পরিবার ও পাড়া",
+      "name_en": "Family & Community",
+      "display_order": 9,
+      "maps_from": [
+        "FAMILY"
+      ],
+      "item_count": 7,
+      "note": "Extension beyond the SRS channel list, carried over from the spreadsheet. Pending OD-04 sign-off — see FLG-DS-04."
+    },
+    {
+      "category_id": "festival",
+      "name_bn": "উৎসব",
+      "name_en": "Festivals",
+      "display_order": 10,
+      "maps_from": [],
+      "item_count": 5,
+      "note": "Added in the 2026-11-14 batch — category consolidation pending OD-04 (FLG-DS-17)."
+    },
+    {
+      "category_id": "collectibles",
+      "name_bn": "সংগ্রহ",
+      "name_en": "Collectibles",
+      "display_order": 11,
+      "maps_from": [],
+      "item_count": 4,
+      "note": "Added in the 2026-11-14 batch — category consolidation pending OD-04 (FLG-DS-17)."
+    },
+    {
+      "category_id": "animals",
+      "name_bn": "প্রাণী",
+      "name_en": "Animals",
+      "display_order": 12,
+      "maps_from": [],
+      "item_count": 1,
+      "note": "Added in the 2026-11-14 batch — category consolidation pending OD-04 (FLG-DS-17)."
+    },
+    {
+      "category_id": "culture",
+      "name_bn": "সংস্কৃতি",
+      "name_en": "Culture",
+      "display_order": 13,
+      "maps_from": [],
+      "item_count": 1,
+      "note": "Added in the 2026-11-14 batch — category consolidation pending OD-04 (FLG-DS-17)."
+    },
+    {
+      "category_id": "entertainment",
+      "name_bn": "বিনোদন",
+      "name_en": "Entertainment",
+      "display_order": 14,
+      "maps_from": [],
+      "item_count": 2,
+      "note": "Added in the 2026-11-14 batch — category consolidation pending OD-04 (FLG-DS-17)."
+    },
+    {
+      "category_id": "nature",
+      "name_bn": "প্রকৃতি",
+      "name_en": "Nature",
+      "display_order": 15,
+      "maps_from": [],
+      "item_count": 8,
+      "note": "Added in the 2026-11-14 batch — category consolidation pending OD-04 (FLG-DS-17)."
+    },
+    {
+      "category_id": "communication",
+      "name_bn": "যোগাযোগ",
+      "name_en": "Communication",
+      "display_order": 16,
+      "maps_from": [],
+      "item_count": 1,
+      "note": "Added in the 2026-11-14 batch — category consolidation pending OD-04 (FLG-DS-17)."
+    },
+    {
+      "category_id": "social",
+      "name_bn": "সামাজিক জীবন",
+      "name_en": "Social",
+      "display_order": 17,
+      "maps_from": [],
+      "item_count": 4,
+      "note": "Added in the 2026-11-14 batch — category consolidation pending OD-04 (FLG-DS-17)."
+    },
+    {
+      "category_id": "sports",
+      "name_bn": "খেলাধুলা",
+      "name_en": "Sports",
+      "display_order": 18,
+      "maps_from": [],
+      "item_count": 2,
+      "note": "Added in the 2026-11-14 batch — category consolidation pending OD-04 (FLG-DS-17)."
+    },
+    {
+      "category_id": "travel",
+      "name_bn": "ভ্রমণ",
+      "name_en": "Travel",
+      "display_order": 19,
+      "maps_from": [],
+      "item_count": 6,
+      "note": "Added in the 2026-11-14 batch — category consolidation pending OD-04 (FLG-DS-17)."
+    },
+    {
+      "category_id": "lifestyle",
+      "name_bn": "জীবনযাত্রা",
+      "name_en": "Lifestyle",
+      "display_order": 20,
+      "maps_from": [],
+      "item_count": 4,
+      "note": "Added in the 2026-11-14 batch — category consolidation pending OD-04 (FLG-DS-17)."
+    }
+  ]
+}

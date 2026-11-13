@@ -1,0 +1,51 @@
+import { afterEach, describe, expect, it } from "vitest";
+import { quizStorage } from "../lib/storage";
+
+const values = new Map<string, string>();
+const mockStorage = {
+  getItem: (key: string) => values.get(key) ?? null,
+  setItem: (key: string, value: string) => { values.set(key, value); },
+  removeItem: (key: string) => { values.delete(key); },
+};
+
+Object.defineProperty(globalThis, "window", {
+  configurable: true,
+  value: { localStorage: mockStorage },
+});
+
+afterEach(() => values.clear());
+
+describe("quiz result persistence", () => {
+  it("writes and reads a completed sampled result for the result page", () => {
+    const responses = {
+      MEM_001: "experienced" as const,
+      MEM_002: "not_experienced" as const,
+      MEM_003: "not_applicable" as const,
+    };
+    quizStorage.saveResult(responses, Object.keys(responses), "90s");
+
+    expect(quizStorage.loadResult()).toMatchObject({
+      responses,
+      askedIds: ["MEM_001", "MEM_002", "MEM_003"],
+      setId: "90s",
+      questionCount: 3,
+    });
+  });
+
+  it("returns null instead of breaking the result route on corrupted saved JSON", () => {
+    values.set("chhelebela:result:v1", "{not-json");
+    expect(quizStorage.loadResult()).toBeNull();
+  });
+
+  it("tracks seen question ids and can clear legacy progress", () => {
+    quizStorage.addSeenIds("90s", ["MEM_001", "MEM_002"]);
+    quizStorage.addSeenIds("mix", ["MEM_002", "MEM_003"]);
+    expect(quizStorage.loadSeenIds()).toEqual({
+      "90s": ["MEM_001", "MEM_002"],
+      mix: ["MEM_002", "MEM_003"],
+    });
+    mockStorage.setItem("chhelebela:progress:v1", "old");
+    quizStorage.clearProgress();
+    expect(mockStorage.getItem("chhelebela:progress:v1")).toBeNull();
+  });
+});

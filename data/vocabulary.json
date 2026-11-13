@@ -1,0 +1,73 @@
+{
+  "$comment": "All controlled vocabularies for the Chhelebela Score data layer, per SRS OD-04. Application code must validate against these lists; content edits happen here and in memories.json, never inside UI components (SRS NFR-009). 'legacy_mappings' documents exactly how the original spreadsheet vocabulary was normalized — no silent reclassification.",
+  "schema_version": "1.0.0",
+  "era_tags": {
+    "$ref": "eras.json#/eras/era_id",
+    "allowed": ["80s", "90s", "2000s", "neutral"]
+  },
+  "era_scope": {
+    "allowed": ["single", "multi"],
+    "description": "Derived: 'multi' when era_tags has more than one entry. Neutral items would use era_tags [\"neutral\"]."
+  },
+  "classification_confidence": {
+    "allowed": ["verified", "probable", "uncertain"],
+    "description": "How confident the content team is in the current era_tags. Nothing is 'verified' yet — every spreadsheet row was 'Under review'."
+  },
+  "setting_tags": {
+    "allowed": ["urban", "rural", "both", "context_specific", "unknown"],
+    "description": "Per SRS 6.6. 'unknown' is a temporary value marking rows that still need setting research (FLG-DS-06); it is NOT approved for launch."
+  },
+  "validation_status": {
+    "allowed": ["draft", "under_review", "verified", "disputed", "retired"],
+    "description": "Per SRS 9.1. Only 'verified' items may ship in the launch list (SRS 6.8)."
+  },
+  "response_states": {
+    "allowed": ["experienced", "not_experienced", "not_applicable", "unsure", "unanswered"],
+    "description": "Per SRS 9.2. Whether 'unsure' is offered in the UI is the OD-01 scoring decision."
+  },
+  "flag_severity": {
+    "allowed": ["blocker", "warning", "info"]
+  },
+  "flag_areas": {
+    "allowed": ["era", "category", "setting", "source", "duplicate", "coverage", "scoring", "description", "wording", "structure"]
+  },
+  "flag_status": {
+    "allowed": ["open", "accepted", "resolved", "wont_fix"]
+  },
+  "legacy_mappings": {
+    "era_tag": {
+      "00s": "2000s"
+    },
+    "category_2026_11_14_batch": {
+      "$comment": "Raw spreadsheet category values (lowercased) → controlled ids. Synonyms merged; genuinely new concepts added as new categories pending OD-04 (FLG-DS-17).",
+      "tv": "tv", "books": "books", "play": "games", "games": "games", "food": "food",
+      "music": "music_eid", "school": "school", "tech": "tech_gaming", "technology": "tech_gaming",
+      "family": "family_community", "festival": "festival", "festivals": "festival",
+      "collectibles": "collectibles", "animals": "animals", "culture": "culture",
+      "entertainment": "entertainment", "nature": "nature", "environment": "nature",
+      "communication": "communication", "social": "social", "sports": "sports",
+      "travel": "travel", "lifestyle": "lifestyle"
+    },
+    "setting_2026_11_14_batch": {
+      "$comment": "The batch used the setting column for locations/access ('Rooftop', 'Gulistan, Dhaka', 'TV access'). Rule: both/both* → both; unknown/blank → unknown; contains 'urban' or 'dhaka' → urban; starts with 'rural' → rural; everything else → context_specific. Raw preserved in item.source_setting (FLG-DS-18)."
+    },
+    "era_role": {
+      "Overlapping": "era_tags may span eras → era_scope 'multi' where more than one tag exists; classification_confidence 'probable' (overlap is evidence-backed but unverified)",
+      "Uncertain": "classification_confidence 'uncertain'",
+      "conflicts": "MEM_013, MEM_019, MEM_020, MEM_021 had era_role 'Overlapping' with a single era tag; kept as-is and flagged rather than guessing extra tags — see their flags."
+    },
+    "setting": {
+      "Both": "both",
+      "Both*": "both (asterisk footnote preserved in review_notes_bn — MEM_001)",
+      "Urban": "urban",
+      "Rural": "rural",
+      "Unknown": "unknown (temporary, FLG-DS-06)"
+    },
+    "validation_status": {
+      "Under review": "under_review"
+    },
+    "era_classification_eligible": {
+      "No": "false (all 30 rows — see FLG-DS-02)"
+    }
+  }
+}

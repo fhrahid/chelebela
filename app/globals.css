@@ -1,0 +1,339 @@
+@import "tailwindcss";
+
+/*
+  Chhelebela Score design tokens.
+  Palette extracted programmatically from the provided theme image
+  (scripts/extract-theme.mjs, run on CHELEBELA SCORE UI THEME.webp):
+  cream paper #F0DAB8 (66% of pixels), CRT teal #21534D, leaf #298265,
+  brick #B15853, flame #E1463E, brass #BC8E39, marigold #F9BB29,
+  tan #D4A66C, wood #543C22, taupe #9D8C7F, ink #1C2429, rose #F35887.
+  Fonts per SRS §7.1: Hind Siliguri (body) + Baloo Da 2 (display).
+*/
+@theme {
+  --font-sans: var(--font-noto), "Noto Sans Bengali", "Noto Sans", sans-serif;
+  --font-display: var(--font-hind), "Hind Siliguri", var(--font-noto), sans-serif;
+
+  --color-paper: #f0dab8;
+  --color-paper-soft: #f7ead0;
+  --color-paper-card: #faf1dd;
+  --color-paper-deep: #e8d3ac;
+
+  --color-ink: #1c2429;
+  --color-ink-soft: #4a5257;
+
+  --color-brand: #21534d;
+  --color-brand-deep: #163b37;
+  --color-leaf: #298265;
+
+  --color-brick: #b15853;
+  --color-flame: #e1463e;
+  --color-brass: #bc8e39;
+  --color-marigold: #f9bb29;
+  --color-tan: #d4a66c;
+  --color-wood: #543c22;
+  --color-taupe: #9d8c7f;
+  --color-rose: #f35887;
+
+  --shadow-hard: 4px 4px 0 0 #1c2429;
+  --shadow-hard-sm: 2px 2px 0 0 #1c2429;
+  --shadow-hard-lg: 6px 6px 0 0 #1c2429;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-paper);
+  color: var(--color-ink);
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(185, 88, 83, 0.09), transparent 34%),
+    radial-gradient(circle at 88% 92%, rgba(33, 83, 77, 0.1), transparent 40%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%2321534D' stroke-opacity='0.055' stroke-width='1.4'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3Ccircle cx='90' cy='30' r='2.4'/%3E%3Ccircle cx='30' cy='90' r='2.4'/%3E%3Ccircle cx='90' cy='90' r='4'/%3E%3Cpath d='M30 22c2.2 2.8 2.2 6 0 8-2.2-2-2.2-5.2 0-8Zm8 8c-2.8 2.2-6 2.2-8 0 2-2.2 5.2-2.2 8 0Zm-8 8c-2.2-2.8-2.2-6 0-8 2.2 2 2.2 5.2 0 8Zm-8-8c2.8-2.2 6-2.2 8 0-2 2.2-5.2 2.2-8 0Z'/%3E%3Cpath d='M90 82c2.2 2.8 2.2 6 0 8-2.2-2-2.2-5.2 0-8Zm8 8c-2.8 2.2-6 2.2-8 0 2-2.2 5.2-2.2 8 0Zm-8 8c-2.2-2.8-2.2-6 0-8 2.2 2 2.2 5.2 0 8Zm-8-8c2.8-2.2 6-2.2 8 0-2 2.2-5.2 2.2-8 0Z'/%3E%3C/g%3E%3C/svg%3E");
+  line-height: 1.65;
+  font-kerning: normal;
+  font-feature-settings: "kern" 1, "liga" 1;
+}
+
+/* On wide screens the folk art is part of the page's background itself, not
+   separate foreground cards. The transparent SVGs sit in the outer gutters. */
+@media (min-width: 1360px) {
+  body {
+    --rickshaw-art-width: min(300px, calc(36vw - 369px), 22vh);
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(185, 88, 83, 0.09), transparent 34%),
+      radial-gradient(circle at 88% 92%, rgba(33, 83, 77, 0.1), transparent 40%),
+      url("/ornaments/rickshaw-floral-left.svg"),
+      url("/ornaments/rickshaw-floral-right.svg"),
+      url("/ornaments/alpona-medallion.svg"),
+      url("/ornaments/childhood-motifs.svg"),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%2321534D' stroke-opacity='0.07' stroke-width='1.4'%3E%3Ccircle cx='30' cy='30' r='4'/%3E%3Ccircle cx='90' cy='30' r='2.4'/%3E%3Ccircle cx='30' cy='90' r='2.4'/%3E%3Ccircle cx='90' cy='90' r='4'/%3E%3Cpath d='M30 22c2.2 2.8 2.2 6 0 8-2.2-2-2.2-5.2 0-8Zm8 8c-2.8 2.2-6 2.2-8 0 2-2.2 5.2-2.2 8 0Zm-8 8c-2.2-2.8-2.2-6 0-8 2.2 2 2.2 5.2 0 8Zm-8-8c2.8-2.2 6-2.2 8 0-2 2.2-5.2 2.2-8 0Z'/%3E%3Cpath d='M90 82c2.2 2.8 2.2 6 0 8-2.2-2-2.2-5.2 0-8Zm8 8c-2.8 2.2-6 2.2-8 0 2-2.2 5.2-2.2 8 0Zm-8 8c-2.2-2.8-2.2-6 0-8 2.2 2 2.2 5.2 0 8Zm-8-8c2.8-2.2 6-2.2 8 0-2 2.2-5.2 2.2-8 0Z'/%3E%3C/g%3E%3C/svg%3E");
+    background-size:
+      auto,
+      auto,
+      var(--rickshaw-art-width) auto,
+      var(--rickshaw-art-width) auto,
+      116px 116px,
+      188px auto,
+      120px 120px;
+    background-position:
+      12% 8%,
+      88% 92%,
+      max(16px, calc(18vw - 220px)) center,
+      right max(16px, calc(18vw - 220px)) center,
+      calc(50% - 512px - 138px) 14vh,
+      calc(50% + 324px) 78vh,
+      0 0;
+    background-repeat:
+      no-repeat,
+      no-repeat,
+      no-repeat,
+      no-repeat,
+      no-repeat,
+      no-repeat,
+      repeat;
+    background-attachment:
+      scroll,
+      scroll,
+      fixed,
+      fixed,
+      fixed,
+      fixed,
+      scroll;
+  }
+}
+
+/* Bengali vowel signs and conjuncts need more vertical room than Latin text.
+   Avoid tight line-heights that clip matras on Android and in-app browsers. */
+.font-display {
+  line-height: 1.4;
+}
+
+:lang(bn) {
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--color-marigold);
+  color: var(--color-ink);
+}
+
+/* ---------- retro effects ---------- */
+
+/* CRT television scanlines */
+.scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.22) 0px,
+    rgba(0, 0, 0, 0.22) 1px,
+    transparent 1px,
+    transparent 4px
+  );
+}
+
+/* soft CRT glass glow */
+.crt-glow {
+  background:
+    radial-gradient(ellipse at center, rgba(249, 187, 41, 0.14), transparent 62%),
+    radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.1), transparent 45%);
+}
+
+/* rickshaw-art stripe divider */
+.rickshaw-stripe {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-flame) 0 14px,
+    var(--color-marigold) 14px 28px,
+    var(--color-leaf) 28px 42px,
+    var(--color-rose) 42px 56px
+  );
+}
+
+/* Original, hand-authored alpana-inspired border: lotus-like floral medallions
+   between little diamond dots. This is a CSS motif, not copied folk artwork. */
+.alpona-border {
+  height: 12px;
+  border-block: 1px solid var(--color-ink);
+  background-color: var(--color-paper-deep);
+  background-image:
+    radial-gradient(ellipse 3px 5px at 50% 50%, var(--color-flame) 94%, transparent 100%),
+    radial-gradient(circle 1.5px at 12px 50%, var(--color-brand) 95%, transparent 100%),
+    radial-gradient(circle 1.5px at 36px 50%, var(--color-brass) 95%, transparent 100%);
+  background-size: 48px 10px, 48px 10px, 48px 10px;
+  background-position: center, center, center;
+  background-repeat: repeat-x;
+}
+
+.alpona-flower {
+  transition: transform 500ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.group:hover .alpona-flower,
+.alpona-flower:hover {
+  transform: rotate(12deg) scale(1.06);
+}
+
+/* cassette tape ribbon */
+.tape-ribbon {
+  background: linear-gradient(
+    to right,
+    #2b2118 0%,
+    #4a3421 30%,
+    #2b2118 50%,
+    #4a3421 70%,
+    #2b2118 100%
+  );
+}
+
+/* speaker grille dots */
+.grille {
+  background-image: radial-gradient(rgba(28, 36, 41, 0.55) 1px, transparent 1.2px);
+  background-size: 6px 6px;
+}
+
+/* gentle TV flicker (respects reduced motion) */
+@keyframes tv-flicker {
+  0%, 100% { opacity: 1; }
+  92% { opacity: 1; }
+  94% { opacity: 0.86; }
+  96% { opacity: 1; }
+  98% { opacity: 0.93; }
+}
+.tv-flicker {
+  animation: tv-flicker 6s infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .tv-flicker {
+    animation: none;
+  }
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* antenna wiggle on hover */
+@keyframes antenna-wiggle {
+  0%, 100% { transform: rotate(-28deg); }
+  50% { transform: rotate(-24deg); }
+}
+
+/* accessible focus ring */
+:where(button, a, summary, input):focus-visible {
+  outline: 3px solid var(--color-brand);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ---------- scroll reveal (components/Reveal.tsx) ---------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.reveal-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+@media (prefers-reduced-motion: reduce) {
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---------- nostalgia ticker marquee ---------- */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: inline-flex;
+  white-space: nowrap;
+  animation: marquee 28s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track { animation: none; }
+}
+
+/* ---------- quiz card transitions ---------- */
+@keyframes card-in {
+  from { opacity: 0; transform: translateY(26px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.card-enter {
+  animation: card-in 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+@keyframes answer-pop {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+.answer-pop {
+  animation: answer-pop 0.25s ease;
+}
+@media (prefers-reduced-motion: reduce) {
+  .card-enter, .answer-pop { animation: none; }
+}
+
+/* ---------- interactive TV channel animations ---------- */
+@keyframes sun-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 24px 6px rgba(249, 187, 41, 0.55); }
+  50% { transform: scale(1.12); box-shadow: 0 0 34px 10px rgba(249, 187, 41, 0.75); }
+}
+@keyframes drift {
+  from { transform: translateX(-30px); }
+  to { transform: translateX(120px); }
+}
+@keyframes drive {
+  from { transform: translateX(-70px); }
+  to { transform: translateX(320px); }
+}
+@keyframes kite {
+  0%, 100% { transform: translateY(0) rotate(-8deg); }
+  50% { transform: translateY(-10px) rotate(6deg); }
+}
+@keyframes ball {
+  0% { transform: translate(0, -22px); }
+  55% { transform: translate(34px, 0); }
+  100% { transform: translate(46px, -16px); }
+}
+@keyframes bat {
+  0%, 60% { transform: rotate(0deg); }
+  75% { transform: rotate(-50deg); }
+  90% { transform: rotate(14deg); }
+  100% { transform: rotate(0deg); }
+}
+@keyframes moon-glow {
+  0%, 100% { box-shadow: 0 0 22px 6px rgba(245, 233, 200, 0.3); }
+  50% { box-shadow: 0 0 34px 12px rgba(245, 233, 200, 0.5); }
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.25); }
+}
+@keyframes fruit-zoom {
+  from { transform: scale(1); }
+  to { transform: scale(1.14); }
+}
+@keyframes caption-cycle {
+  0%, 2% { opacity: 0; }
+  6%, 26% { opacity: 1; }
+  30%, 100% { opacity: 0; }
+}
+@keyframes globe-spin {
+  from { background-position: 0 0; }
+  to { background-position: 56px 0; }
+}
+
+/* ---------- score count-up number ---------- */
+@keyframes score-pop {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+.score-pop {
+  animation: score-pop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}

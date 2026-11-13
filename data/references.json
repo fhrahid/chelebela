@@ -1,0 +1,687 @@
+{
+  "$comment": "Reference registry. CRITICAL DATA-GAP: the spreadsheet cites reference ids R1–R23 but contains NO reference sheet defining them (FLG-DS-03). publisher_hint is taken from the publisher named inside each item's evidence text. candidate_url entries are UNCONFIRMED matches against the nine URLs listed in the idea proposal — they are leads for the content team to confirm, not verified citations. No URL has been invented. Items without a plausible pool match stay 'unresolved'.",
+  "schema_version": "1.0.0",
+  "proposal_url_pool": [
+    {
+      "pool_id": "P1",
+      "url": "https://thefinancialexpress.com.bd/others/mimi-chocolate-to-popeye-the-sailorman-a-walk-down-the-memory-lane-1667130647",
+      "label": "Financial Express — Mimi chocolate to Popeye, a walk down memory lane"
+    },
+    {
+      "pool_id": "P2",
+      "url": "https://www.thedailystar.net/shout/news/things-we-had-the-90s-1779562",
+      "label": "Daily Star — Things that we had in the 90s"
+    },
+    {
+      "pool_id": "P3",
+      "url": "https://www.thedailystar.net/star-weekend/kowalski-analysis/news/hello-kishor-bondhura-1698844",
+      "label": "Daily Star — Hello, kishor bondhura: Tin Goyenda's influence"
+    },
+    {
+      "pool_id": "P4",
+      "url": "https://www.tbsnews.net/splash/nostalgia-bangla-gta-vice-city-174856",
+      "label": "TBS — The nostalgia of Bangla GTA: Vice City"
+    },
+    {
+      "pool_id": "P5",
+      "url": "https://www.tbsnews.net/feature/panorama/nostalgia-cassettes-107518",
+      "label": "TBS — The nostalgia of cassettes"
+    },
+    {
+      "pool_id": "P6",
+      "url": "https://www.tbsnews.net/thoughts/lost-games-childhood-traditional-games-mobile-dependency-1096866",
+      "label": "TBS — The lost games of childhood"
+    },
+    {
+      "pool_id": "P7",
+      "url": "https://en.prothomalo.com/opinion/bp7tfg3bit",
+      "label": "Prothom Alo (EN) — Ek Mutho Nobboi book review"
+    },
+    {
+      "pool_id": "P8",
+      "url": "https://www.gsmarena.com/nokia_1100-reviews-512p5.php",
+      "label": "GSMArena — Nokia 1100 page"
+    },
+    {
+      "pool_id": "P9",
+      "url": "https://cdn.woobox.com/articles/viral-quiz-mechanics",
+      "label": "Woobox — Viral quiz mechanics (methodology reference, not a memory source)"
+    }
+  ],
+  "references": [
+    {
+      "ref_id": "R1",
+      "cited_by": [
+        "MEM_001"
+      ],
+      "publisher_hint": "UNICEF Bangladesh",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Locate the UNICEF source supporting the 1993 first broadcast claim for Meena in Bangladesh."
+    },
+    {
+      "ref_id": "R2",
+      "cited_by": [
+        "MEM_002",
+        "MEM_003",
+        "MEM_004",
+        "MEM_005",
+        "MEM_007"
+      ],
+      "publisher_hint": "thedailystar.net",
+      "candidate_pool_id": "P2",
+      "match_confidence": "low",
+      "status": "candidate_unconfirmed",
+      "needs": "Five different items cite R2 — almost certainly more than one Daily Star article. Identify each actual article; P2 is only a plausible lead for the 90s-roundup claims."
+    },
+    {
+      "ref_id": "R3",
+      "cited_by": [
+        "MEM_006"
+      ],
+      "publisher_hint": "প্রথম আলো (Prothom Alo)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Prothom Alo piece linking Eid cards to 90s childhood. P7 is a book review on a different topic — not assumed to be the same."
+    },
+    {
+      "ref_id": "R4",
+      "cited_by": [
+        "MEM_006"
+      ],
+      "publisher_hint": "Daily Star (Dhaka Eid-card shops, 90s–early 00s)",
+      "candidate_pool_id": "P2",
+      "match_confidence": "low",
+      "status": "candidate_unconfirmed",
+      "needs": "Confirm the exact Daily Star article describing Eid-card shops in Dhaka."
+    },
+    {
+      "ref_id": "R5",
+      "cited_by": [
+        "MEM_007"
+      ],
+      "publisher_hint": "thedailystar.net (early-90s coin-operated arcades in Dhaka)",
+      "candidate_pool_id": "P2",
+      "match_confidence": "low",
+      "status": "candidate_unconfirmed",
+      "needs": "Confirm exact article on neighbourhood coin-op gaming."
+    },
+    {
+      "ref_id": "R6",
+      "cited_by": [
+        "MEM_008",
+        "MEM_009",
+        "MEM_010",
+        "MEM_031"
+      ],
+      "publisher_hint": "old.thefinancialexpress.com.bd (Mimi; Puran Dhaka childhood games)",
+      "candidate_pool_id": "P1",
+      "match_confidence": "high",
+      "status": "candidate_unconfirmed",
+      "needs": "Publisher and topic match P1 strongly; still confirm P1 covers the games passage (gollachut, borof-pani) and not a second FE piece."
+    },
+    {
+      "ref_id": "R7",
+      "cited_by": [
+        "MEM_011",
+        "MEM_012"
+      ],
+      "publisher_hint": "Personal essay — early-80s Dhaka childhood (hopscotch, tag)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify author/publication; single personal account — needs corroboration."
+    },
+    {
+      "ref_id": "R8",
+      "cited_by": [
+        "MEM_013"
+      ],
+      "publisher_hint": "Retrospective account — Puran Dhaka kite-flying, 1970s–80s",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify source; note it pushes evidence into the 1970s (FLG-DS-13)."
+    },
+    {
+      "ref_id": "R9",
+      "cited_by": [
+        "MEM_014"
+      ],
+      "publisher_hint": "Report on Tin Goyenda readership from mid-80s",
+      "candidate_pool_id": "P3",
+      "match_confidence": "high",
+      "status": "candidate_unconfirmed",
+      "needs": "Publisher and topic match P3 strongly; confirm."
+    },
+    {
+      "ref_id": "R10",
+      "cited_by": [
+        "MEM_015",
+        "MEM_016"
+      ],
+      "publisher_hint": "Bangladeshi retrospective account — 1980s reading culture",
+      "candidate_pool_id": "P7",
+      "match_confidence": "low",
+      "status": "candidate_unconfirmed",
+      "needs": "Evidence text names no publisher. P7 (Prothom Alo reading-culture piece) is a weak lead only."
+    },
+    {
+      "ref_id": "R11",
+      "cited_by": [
+        "MEM_017",
+        "MEM_018"
+      ],
+      "publisher_hint": "Personal rural childhood account, 80s–mid-90s (radio, post-harvest play)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify author/publication; single rural account — valuable for balance, needs corroboration."
+    },
+    {
+      "ref_id": "R12",
+      "cited_by": [
+        "MEM_019"
+      ],
+      "publisher_hint": "Report on 1985 BTV broadcast of Ei Shob Din Ratri (+ reruns)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the report confirming the 1985 broadcast."
+    },
+    {
+      "ref_id": "R13",
+      "cited_by": [
+        "MEM_020"
+      ],
+      "publisher_hint": "Dhaka Tribune — Bohubrihi 1988–89 broadcast; 2020 rerun announcement",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "No Dhaka Tribune URL exists in the proposal pool; locate the article."
+    },
+    {
+      "ref_id": "R14",
+      "cited_by": [
+        "MEM_021"
+      ],
+      "publisher_hint": "Sesame Workshop (producer) — Sisimpur on air in Bangladesh since 2005",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Locate the Sesame Workshop statement/page."
+    },
+    {
+      "ref_id": "R15",
+      "cited_by": [
+        "MEM_022"
+      ],
+      "publisher_hint": "Rising Stars (Daily Star supplement), 2004 — Pokémon interest among Dhaka children",
+      "candidate_pool_id": "P2",
+      "match_confidence": "low",
+      "status": "candidate_unconfirmed",
+      "needs": "Rising Stars pieces are not the P2 article; locate the 2004 piece."
+    },
+    {
+      "ref_id": "R16",
+      "cited_by": [
+        "MEM_023"
+      ],
+      "publisher_hint": "2005 report — Beyblade sales at Metro Plaza and children's tournaments",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify publication."
+    },
+    {
+      "ref_id": "R17",
+      "cited_by": [
+        "MEM_024"
+      ],
+      "publisher_hint": "Report mixing Game Boy and Brick Game memories (2000s)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify publication; source conflates two devices (FLG-MEM-024-1)."
+    },
+    {
+      "ref_id": "R18",
+      "cited_by": [
+        "MEM_025"
+      ],
+      "publisher_hint": "2009 local feature — Snake on old Nokia phones",
+      "candidate_pool_id": "P8",
+      "match_confidence": "low",
+      "status": "candidate_unconfirmed",
+      "needs": "P8 (GSMArena) is a spec/review page, unlikely to be a '2009 local feature' — treat as mismatch until the real article is found."
+    },
+    {
+      "ref_id": "R19",
+      "cited_by": [
+        "MEM_026"
+      ],
+      "publisher_hint": "Developer-interview-based report — Bangla Vice City mid-2000s popularity",
+      "candidate_pool_id": "P4",
+      "match_confidence": "high",
+      "status": "candidate_unconfirmed",
+      "needs": "Publisher (TBS) and topic match P4 strongly; confirm."
+    },
+    {
+      "ref_id": "R20",
+      "cited_by": [
+        "MEM_027"
+      ],
+      "publisher_hint": "2003 report — hourly internet browsing in Dhaka cafés",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the 2003 report."
+    },
+    {
+      "ref_id": "R21",
+      "cited_by": [
+        "MEM_027",
+        "MEM_028",
+        "MEM_029"
+      ],
+      "publisher_hint": "Dhaka childhood memoir (2000s) — cyber café, Meridian chips, Gulshan Wonderland",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Single memoir backing three separate items — see FLG-DS-11 source concentration."
+    },
+    {
+      "ref_id": "R22",
+      "cited_by": [
+        "MEM_028"
+      ],
+      "publisher_hint": "2009 market report — Meridian brand presence",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the 2009 market coverage."
+    },
+    {
+      "ref_id": "R23",
+      "cited_by": [
+        "MEM_030"
+      ],
+      "publisher_hint": "Retrospective account — early-2000s Toonami viewers discussing episodes at school",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify publication/account."
+    },
+    {
+      "ref_id": "R24",
+      "cited_by": [
+        "MEM_032",
+        "MEM_033",
+        "MEM_078"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R25",
+      "cited_by": [
+        "MEM_034",
+        "MEM_035",
+        "MEM_036"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R26",
+      "cited_by": [
+        "MEM_037",
+        "MEM_038",
+        "MEM_039"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R27",
+      "cited_by": [
+        "MEM_040",
+        "MEM_041",
+        "MEM_042",
+        "MEM_054",
+        "MEM_055",
+        "MEM_056",
+        "MEM_057",
+        "MEM_058",
+        "MEM_059",
+        "MEM_060",
+        "MEM_061",
+        "MEM_073",
+        "MEM_074",
+        "MEM_109"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R28",
+      "cited_by": [
+        "MEM_043",
+        "MEM_044"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R29",
+      "cited_by": [
+        "MEM_045",
+        "MEM_046",
+        "MEM_047",
+        "MEM_048",
+        "MEM_082",
+        "MEM_083",
+        "MEM_084",
+        "MEM_085",
+        "MEM_086",
+        "MEM_087",
+        "MEM_088",
+        "MEM_089",
+        "MEM_092"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R30",
+      "cited_by": [
+        "MEM_049",
+        "MEM_050",
+        "MEM_101",
+        "MEM_102",
+        "MEM_103",
+        "MEM_104",
+        "MEM_105",
+        "MEM_106"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R31",
+      "cited_by": [
+        "MEM_051",
+        "MEM_052",
+        "MEM_053",
+        "MEM_079"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R32",
+      "cited_by": [
+        "MEM_062",
+        "MEM_063",
+        "MEM_064",
+        "MEM_065",
+        "MEM_066",
+        "MEM_077",
+        "MEM_080",
+        "MEM_107",
+        "MEM_108"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R33",
+      "cited_by": [
+        "MEM_067",
+        "MEM_068",
+        "MEM_075",
+        "MEM_076"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R34",
+      "cited_by": [
+        "MEM_069",
+        "MEM_070",
+        "MEM_071",
+        "MEM_072"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R35",
+      "cited_by": [
+        "MEM_081"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R36",
+      "cited_by": [
+        "MEM_093",
+        "MEM_094",
+        "MEM_095",
+        "MEM_096"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R37",
+      "cited_by": [
+        "MEM_090",
+        "MEM_097",
+        "MEM_098",
+        "MEM_099",
+        "MEM_100",
+        "MEM_124",
+        "MEM_125",
+        "MEM_126",
+        "MEM_127"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R38",
+      "cited_by": [
+        "MEM_091",
+        "MEM_110"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R39",
+      "cited_by": [
+        "MEM_111",
+        "MEM_112",
+        "MEM_113",
+        "MEM_114",
+        "MEM_115",
+        "MEM_116",
+        "MEM_117",
+        "MEM_118",
+        "MEM_119",
+        "MEM_120",
+        "MEM_149"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R40",
+      "cited_by": [
+        "MEM_121",
+        "MEM_122",
+        "MEM_123"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R41",
+      "cited_by": [
+        "MEM_128",
+        "MEM_129",
+        "MEM_130",
+        "MEM_131",
+        "MEM_132",
+        "MEM_133",
+        "MEM_134",
+        "MEM_135",
+        "MEM_141",
+        "MEM_142",
+        "MEM_143",
+        "MEM_144",
+        "MEM_145"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R42",
+      "cited_by": [
+        "MEM_136"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R43",
+      "cited_by": [
+        "MEM_137",
+        "MEM_139"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R44",
+      "cited_by": [
+        "MEM_138"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R45",
+      "cited_by": [
+        "MEM_140"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R46",
+      "cited_by": [
+        "MEM_146",
+        "MEM_147"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R47",
+      "cited_by": [
+        "MEM_148"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    },
+    {
+      "ref_id": "R48",
+      "cited_by": [
+        "MEM_150"
+      ],
+      "publisher_hint": "(2026-11-14 batch — publisher not yet identified)",
+      "candidate_pool_id": null,
+      "match_confidence": null,
+      "status": "unresolved",
+      "needs": "Identify the actual source; like R1–R23 it is currently a dangling citation (FLG-DS-03)."
+    }
+  ]
+}

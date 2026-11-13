@@ -1,0 +1,17 @@
+node_modules
+.next
+out
+.git
+.gitignore
+Dockerfile
+.dockerignore
+*.md
+*.docx
+*.xlsx
+*.webp
+docs
+scripts
+tests
+coverage
+.env*
+npm-debug.log*

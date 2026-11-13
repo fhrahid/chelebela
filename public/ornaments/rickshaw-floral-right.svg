@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 1200" fill="none">
+  <!-- Original transparent bird-and-flower folk-art inspired background motif. -->
+  <g opacity=".5" stroke="#1C2429" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M150 24c-65 45-28 103 8 143 37 41-15 78-48 111-37 38 7 82 39 121 34 42-21 88-49 123-28 35 6 81 39 117 36 39-16 84-45 118-30 35 6 78 40 115 36 40-10 84-43 128-29 40 11 78 55 116" stroke="#E1463E" stroke-width="9"/>
+    <path d="M150 24c-65 45-28 103 8 143 37 41-15 78-48 111-37 38 7 82 39 121 34 42-21 88-49 123-28 35 6 81 39 117 36 39-16 84-45 118-30 35 6 78 40 115 36 40-10 84-43 128-29 40 11 78 55 116" stroke="#F9BB29" stroke-width="2"/>
+
+    <!-- broad feather/leaf sprays -->
+    <g fill="#298265">
+      <path d="M153 143c-8-43 8-65 29-57 8 27-1 47-29 57Z"/>
+      <path d="M125 181c-43-12-56-34-37-50 28 8 41 25 37 50Z"/>
+      <path d="M177 305c41-19 67-8 63 17-27 15-49 9-63-17Z"/>
+      <path d="M122 454c-40-20-47-47-24-56 27 13 36 32 24 56Z"/>
+      <path d="M184 603c44-12 65 3 56 26-29 9-49 0-56-26Z"/>
+      <path d="M111 733c-44-9-62-31-43-48 29 6 45 22 43 48Z"/>
+      <path d="M191 869c40-19 67-7 62 18-27 14-49 8-62-18Z"/>
+      <path d="M111 1010c-42-16-53-41-31-53 28 10 40 28 31 53Z"/>
+      <path d="M177 1117c41-17 67-4 60 20-28 13-49 5-60-20Z"/>
+    </g>
+
+    <!-- stylized folk-bird motif with a fan of tail feathers -->
+    <g transform="translate(136 392)">
+      <path d="M0 31c-21-8-33-27-25-44 7-15 25-18 38-5 9 9 11 24 3 36l29 24-35 4-10-15Z" fill="#F9BB29"/>
+      <circle cx="4" cy="-1" r="2.5" fill="#1C2429" stroke="none"/>
+      <path d="M-20 28c-31 7-44 28-32 48 13 20 42 18 59-2 21-24 45-28 65-15" stroke="#F35887" stroke-width="7"/>
+      <g fill="#F35887">
+        <ellipse cx="54" cy="2" rx="11" ry="28" transform="rotate(52 54 2)"/>
+        <ellipse cx="71" cy="24" rx="11" ry="28" transform="rotate(76 71 24)"/>
+        <ellipse cx="72" cy="50" rx="11" ry="28" transform="rotate(105 72 50)"/>
+        <ellipse cx="59" cy="72" rx="11" ry="28" transform="rotate(130 59 72)"/>
+      </g>
+      <g fill="#21534D" stroke="#F7EAD0" stroke-width="2">
+        <circle cx="62" cy="2" r="6"/><circle cx="81" cy="25" r="6"/>
+        <circle cx="81" cy="51" r="6"/><circle cx="67" cy="73" r="6"/>
+      </g>
+      <path d="M-8 56c1 23-5 35-17 45m27-42c14 20 16 33 10 47" stroke="#F9BB29" stroke-width="3"/>
+    </g>
+
+    <!-- flower medallions -->
+    <g strokeWidth="2.5">
+      <g transform="translate(202 246)" stroke="#1C2429">
+        <g fill="#F9BB29">
+          <ellipse cy="-25" rx="11" ry="23"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(45)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(90)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(135)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(180)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(225)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(270)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(315)"/>
+        </g>
+        <circle r="14" fill="#E1463E"/><circle r="4" fill="#F7EAD0"/>
+      </g>
+      <g transform="translate(86 557)" stroke="#1C2429">
+        <g fill="#F35887">
+          <ellipse cy="-25" rx="11" ry="23"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(45)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(90)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(135)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(180)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(225)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(270)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(315)"/>
+        </g>
+        <circle r="14" fill="#F9BB29"/><circle r="4" fill="#1C2429"/>
+      </g>
+      <g transform="translate(205 780)" stroke="#1C2429">
+        <g fill="#E1463E">
+          <ellipse cy="-25" rx="11" ry="23"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(45)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(90)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(135)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(180)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(225)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(270)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(315)"/>
+        </g>
+        <circle r="14" fill="#F9BB29"/><circle r="4" fill="#F7EAD0"/>
+      </g>
+      <g transform="translate(92 1052)" stroke="#1C2429">
+        <g fill="#F9BB29">
+          <ellipse cy="-25" rx="11" ry="23"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(45)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(90)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(135)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(180)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(225)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(270)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(315)"/>
+        </g>
+        <circle r="14" fill="#B15853"/><circle r="4" fill="#F7EAD0"/>
+      </g>
+    </g>
+    <g fill="#F35887" stroke="none">
+      <circle cx="50" cy="325" r="6"/><circle cx="236" cy="451" r="5"/>
+      <circle cx="45" cy="891" r="5"/><circle cx="241" cy="948" r="6"/>
+      <circle cx="160" cy="1154" r="5"/>
+    </g>
+  </g>
+</svg>

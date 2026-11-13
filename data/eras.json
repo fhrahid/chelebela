@@ -1,0 +1,41 @@
+{
+  "$comment": "Controlled era vocabulary for Chhelebela Score. Per SRS OD-02/OD-04 these tags are a proposed baseline pending product-owner approval. A multi-era item expresses this with an array of era ids (e.g. [\"80s\",\"90s\"]); no separate 'multi-era' id is needed. 'neutral' is reserved for era-neutral items (e.g. cricket history known from family stories, per the idea proposal). Evidence outside these ranges (e.g. 1970s) is flagged, not silently recategorized — see review-flags.json FLG-DS-13.",
+  "schema_version": "1.0.0",
+  "eras": [
+    {
+      "era_id": "80s",
+      "label_bn": "৮০-এর দশক",
+      "label_en": "80s",
+      "range": "1980–1989",
+      "item_count": 84
+    },
+    {
+      "era_id": "90s",
+      "label_bn": "৯০-এর দশক",
+      "label_en": "90s",
+      "range": "1990–1999",
+      "item_count": 129
+    },
+    {
+      "era_id": "2000s",
+      "label_bn": "২০০০-এর দশক",
+      "label_en": "2000s",
+      "range": "2000–2009",
+      "item_count": 40
+    },
+    {
+      "era_id": "neutral",
+      "label_bn": "যুগ-নিরপেক্ষ",
+      "label_en": "Era-neutral",
+      "range": null,
+      "item_count": 0,
+      "note": "Reserved for items experienceable across (or outside) the covered eras, e.g. cricket history known from family stories. No dataset item uses this tag yet — see FLG-DS-09."
+    }
+  ],
+  "usage_rules": {
+    "item_count_semantics": "item_count = number of memory items whose era_tags include this era; multi-era items count toward EACH tagged era, so the sum exceeds the item total (30).",
+    "multi_era": "Use an array of era ids in era_tags on the memory item; do not double-count in era affinity until OD-05 is decided.",
+    "out_of_range_evidence": "Evidence pointing outside 1980–2009 (e.g. 1970s, 2010s, 2020 reruns) must be recorded in the item flags, not absorbed into era_tags.",
+    "legacy_alias": "The spreadsheet tag '00s' is standardized to '2000s'. See data/DATA-CHANGELOG.md."
+  }
+}

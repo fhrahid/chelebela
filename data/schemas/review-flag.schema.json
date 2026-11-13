@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "chhelebela/schemas/review-flag.schema.json",
+  "title": "Chhelebela Score review flag",
+  "description": "One entry in the review queue. Flags exist so questionable content is reviewed by humans instead of being silently corrected or discarded.",
+  "type": "object",
+  "required": ["flag_id", "scope", "area", "severity", "title", "detail", "recommended_action", "status"],
+  "additionalProperties": false,
+  "properties": {
+    "flag_id": { "type": "string", "pattern": "^FLG-(DS|MEM)-[0-9]+(-[0-9]+)?$" },
+    "scope": { "type": "string", "enum": ["dataset", "item"] },
+    "item_id": { "type": "string", "pattern": "^MEM_[0-9]{3}$" },
+    "area": { "type": "string", "enum": ["era", "category", "setting", "source", "duplicate", "coverage", "scoring", "description", "wording", "structure"] },
+    "severity": { "type": "string", "enum": ["blocker", "warning", "info"] },
+    "title": { "type": "string", "minLength": 1 },
+    "detail": { "type": "string", "minLength": 1 },
+    "recommended_action": { "type": "string", "minLength": 1 },
+    "status": { "type": "string", "enum": ["open", "accepted", "resolved", "wont_fix"] }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "scope": { "const": "item" } } },
+      "then": { "required": ["item_id"] }
+    }
+  ]
+}

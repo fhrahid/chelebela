@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 1200" fill="none">
+  <!-- Original transparent alpana/rickshaw-art inspired background motif. -->
+  <g opacity=".52" stroke="#1C2429" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- flowing central vine -->
+    <path d="M148 28c74 52 20 108-14 143-43 45 35 83 53 126 18 42-43 70-65 107-25 42 20 84 52 120 39 44-11 93-39 132-30 42 2 75 31 113 29 39-20 79-48 112-29 34 4 76 32 112 29 38-14 74-38 111" stroke="#21534D" stroke-width="9"/>
+    <path d="M148 28c74 52 20 108-14 143-43 45 35 83 53 126 18 42-43 70-65 107-25 42 20 84 52 120 39 44-11 93-39 132-30 42 2 75 31 113 29 39-20 79-48 112-29 34 4 76 32 112 29 38-14 74-38 111" stroke="#F9BB29" stroke-width="2"/>
+
+    <!-- leaf pairs -->
+    <g fill="#298265">
+      <path d="M133 128c-51-22-71-3-64 25 35 13 57 5 64-25Z"/>
+      <path d="M166 206c51-22 71-3 64 25-35 13-57 5-64-25Z"/>
+      <path d="M117 342c-51-22-71-3-64 25 35 13 57 5 64-25Z"/>
+      <path d="M184 429c51-22 71-3 64 25-35 13-57 5-64-25Z"/>
+      <path d="M117 576c-51-22-71-3-64 25 35 13 57 5 64-25Z"/>
+      <path d="M183 692c51-22 71-3 64 25-35 13-57 5-64-25Z"/>
+      <path d="M125 824c-51-22-71-3-64 25 35 13 57 5 64-25Z"/>
+      <path d="M177 935c51-22 71-3 64 25-35 13-57 5-64-25Z"/>
+      <path d="M133 1068c-51-22-71-3-64 25 35 13 57 5 64-25Z"/>
+    </g>
+
+    <!-- flower medallions -->
+    <g>
+      <g transform="translate(88 286)">
+        <g fill="#E1463E">
+          <ellipse cy="-30" rx="13" ry="27"/><ellipse cy="-30" rx="13" ry="27" transform="rotate(45)"/>
+          <ellipse cy="-30" rx="13" ry="27" transform="rotate(90)"/><ellipse cy="-30" rx="13" ry="27" transform="rotate(135)"/>
+          <ellipse cy="-30" rx="13" ry="27" transform="rotate(180)"/><ellipse cy="-30" rx="13" ry="27" transform="rotate(225)"/>
+          <ellipse cy="-30" rx="13" ry="27" transform="rotate(270)"/><ellipse cy="-30" rx="13" ry="27" transform="rotate(315)"/>
+        </g>
+        <circle r="18" fill="#F9BB29"/><circle r="6" fill="#1C2429" stroke="none"/>
+      </g>
+      <g transform="translate(212 516)">
+        <g fill="#F35887">
+          <ellipse cy="-25" rx="11" ry="23"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(45)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(90)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(135)"/>
+          <ellipse cy="-25" rx="11" ry="23"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(225)"/>
+          <ellipse cy="-25" rx="11" ry="23" transform="rotate(270)"/><ellipse cy="-25" rx="11" ry="23" transform="rotate(315)"/>
+        </g>
+        <circle r="15" fill="#F9BB29"/><circle r="5" fill="#1C2429" stroke="none"/>
+      </g>
+      <g transform="translate(91 770)">
+        <g fill="#F9BB29">
+          <ellipse cy="-27" rx="12" ry="24"/><ellipse cy="-27" rx="12" ry="24" transform="rotate(45)"/>
+          <ellipse cy="-27" rx="12" ry="24" transform="rotate(90)"/><ellipse cy="-27" rx="12" ry="24" transform="rotate(135)"/>
+          <ellipse cy="-27" rx="12" ry="24" transform="rotate(180)"/><ellipse cy="-27" rx="12" ry="24" transform="rotate(225)"/>
+          <ellipse cy="-27" rx="12" ry="24" transform="rotate(270)"/><ellipse cy="-27" rx="12" ry="24" transform="rotate(315)"/>
+        </g>
+        <circle r="16" fill="#B15853"/><circle r="5" fill="#F7EAD0" stroke="none"/>
+      </g>
+      <g transform="translate(207 1014)">
+        <g fill="#E1463E">
+          <ellipse cy="-27" rx="12" ry="24"/><ellipse cy="-27" rx="12" ry="24" transform="rotate(45)"/>
+          <ellipse cy="-27" rx="12" ry="24" transform="rotate(90)"/><ellipse cy="-27" rx="12" ry="24" transform="rotate(135)"/>
+          <ellipse cy="-27" rx="12" ry="24" transform="rotate(180)"/><ellipse cy="-27" rx="12" ry="24" transform="rotate(225)"/>
+          <ellipse cy="-27" rx="12" ry="24" transform="rotate(270)"/><ellipse cy="-27" rx="12" ry="24" transform="rotate(315)"/>
+        </g>
+        <circle r="16" fill="#F9BB29"/><circle r="5" fill="#1C2429" stroke="none"/>
+      </g>
+    </g>
+
+    <!-- little seed/dot details -->
+    <g fill="#F35887" stroke="none">
+      <circle cx="49" cy="191" r="6"/><circle cx="238" cy="355" r="5"/>
+      <circle cx="44" cy="659" r="5"/><circle cx="245" cy="868" r="6"/>
+      <circle cx="92" cy="1127" r="5"/><circle cx="223" cy="1090" r="4"/>
+    </g>
+  </g>
+</svg>
