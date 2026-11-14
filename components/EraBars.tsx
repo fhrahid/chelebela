@@ -29,7 +29,7 @@ export default function EraBars({ profile }: { profile: EraShare[] }) {
             />
           </span>
           <span className="w-12 text-right font-display text-sm font-bold">{toBnPct(e.share)}</span>
-          <span className="w-10 text-right text-xs text-ink-soft">({toBn(e.count)}টা)</span>
+          <span className="w-10 text-right text-xs text-ink-soft">({toBn(Math.round(e.count))}টা)</span>
         </li>
       ))}
     </ul>

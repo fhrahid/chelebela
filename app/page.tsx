@@ -3,8 +3,9 @@ import { ArrowRight, BarChart3, Disc3, Users } from "lucide-react";
 import RetroTV from "@/components/RetroTV";
 import Reveal from "@/components/Reveal";
 import AlponaFlower from "@/components/AlponaFlower";
-import { CONTENT_REVIEW_NOTE, ERAS, ITEMS, SORTED_CATEGORIES, TOTAL_ITEMS } from "@/lib/data";
-import { DEFAULT_QUIZ_LENGTH, ERA_SETS, setPool } from "@/lib/quiz";
+import EraCassettePicker from "@/components/EraCassettePicker";
+import { CONTENT_REVIEW_NOTE, SORTED_CATEGORIES, TOTAL_ITEMS } from "@/lib/data";
+import { DEFAULT_QUIZ_LENGTH } from "@/lib/quiz";
 import { toBn } from "@/lib/bn";
 
 const TICKER = [
@@ -129,47 +130,8 @@ export default function LandingPage() {
           <p className="mt-1 text-sm text-ink-soft">
             প্রতিটা ক্যাসেটে ওই দশকের স্মৃতি — মিক্স টেপে সবগুলো মিলেমিশে। একাধিক দশকের স্মৃতি একাধিক ক্যাসেটে ঢুকে যায়।
           </p>
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {ERA_SETS.map((set, i) => {
-              const count = setPool(set.id, ITEMS).length;
-              const era = ERAS.find((e) => e.era_id === set.era);
-              return (
-                <Reveal key={set.id} delay={i * 100}>
-                  <Link
-                    href="/quiz"
-                    className="group block h-full rounded-2xl border-2 border-ink bg-paper-card p-4 shadow-hard-sm transition-transform hover:-translate-y-1"
-                  >
-                    {/* cassette shell */}
-                    <div className="relative rounded-xl border-2 border-ink p-3" style={{ backgroundColor: `${set.color}22` }}>
-                  <div className="flex items-center justify-between">
-                    <div className="flex gap-1.5" aria-hidden="true">
-                      <span className="h-2.5 w-2.5 rounded-full border border-ink" style={{ backgroundColor: set.color }} />
-                      <span className="h-2.5 w-2.5 rounded-full border border-ink" style={{ backgroundColor: set.color }} />
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-[10px] font-bold text-ink-soft">পিঠ ১</span>
-                      <AlponaFlower
-                        size={27}
-                        petal={set.id === "80s" ? "#543C22" : set.id === "90s" ? "#E1463E" : set.id === "2000s" ? "#298265" : "#F35887"}
-                        center="#F9BB29"
-                      />
-                    </div>
-                  </div>
-                      <div className="mt-2 rounded-lg border-2 border-ink bg-brand-deep py-2 text-center">
-                        <span className="font-display text-lg font-extrabold text-marigold">{set.label_bn}</span>
-                      </div>
-                    </div>
-                    <p className="mt-3 text-sm font-bold">{set.sub_bn}</p>
-                    <p className="mt-0.5 text-xs text-ink-soft">
-                      {toBn(count)}টি স্মৃতির ভান্ডার{era ? ` · ${era.range}` : " · সব দশক"}
-                    </p>
-                    <p className="mt-2 inline-flex items-center gap-1 text-sm font-bold text-brand group-hover:underline">
-                      বাজাও <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" aria-hidden="true" />
-                    </p>
-                  </Link>
-                </Reveal>
-              );
-            })}
+          <div className="mt-5">
+            <EraCassettePicker />
           </div>
         </section>
 

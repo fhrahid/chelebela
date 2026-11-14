@@ -188,6 +188,29 @@ body {
   );
 }
 
+/* Cassette reels only spin while the player is inspecting a tape. */
+.cassette-art {
+  overflow: visible;
+  filter: drop-shadow(2px 3px 0 rgba(28, 36, 41, 0.18));
+}
+.cassette-reel {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.group:hover .cassette-reel,
+.group:focus-visible .cassette-reel {
+  animation: cassette-reel-spin 1.5s linear infinite;
+}
+@keyframes cassette-reel-spin {
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .group:hover .cassette-reel,
+  .group:focus-visible .cassette-reel {
+    animation: none;
+  }
+}
+
 /* speaker grille dots */
 .grille {
   background-image: radial-gradient(rgba(28, 36, 41, 0.55) 1px, transparent 1.2px);

@@ -14,6 +14,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, ChevronDown, Home, X } from "lucide-react";
 import AlponaFlower from "@/components/AlponaFlower";
+import CassetteArtwork from "@/components/CassetteArtwork";
 import { CONTENT_REVIEW_NOTE, DEFAULT_DATASET, TOTAL_ITEMS } from "@/lib/data";
 import { ALL_QUESTIONS_COUNT, answeredTooFast, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, getEraSet, sampleQuiz, setPool } from "@/lib/quiz";
 import { quizStorage } from "@/lib/storage";
@@ -325,6 +326,7 @@ function SetSelect({
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {ERA_SETS.map((s) => {
           const count = setPool(s.id, DEFAULT_DATASET.items).length;
+          const shell = s.id === "80s" ? "#C7C0AF" : s.id === "90s" ? "#D4C5A5" : s.id === "2000s" ? "#9CA49A" : "#D5B9A0";
           return (
             <button
               key={s.id}
@@ -332,18 +334,16 @@ function SetSelect({
               onClick={() => onPick(s.id, questionCount)}
               className="group rounded-2xl border-2 border-ink bg-paper-card p-4 text-left shadow-hard-sm transition-transform hover:-translate-y-1"
             >
-              <div className="relative rounded-xl border-2 border-ink p-3" style={{ backgroundColor: `${s.color}22` }}>
-                <div className="flex items-center justify-between">
-                  <div className="flex gap-1.5" aria-hidden="true">
-                    <span className="h-2.5 w-2.5 rounded-full border border-ink" style={{ backgroundColor: s.color }} />
-                    <span className="h-2.5 w-2.5 rounded-full border border-ink" style={{ backgroundColor: s.color }} />
-                  </div>
+              <div className="rounded-xl border-2 border-ink p-2" style={{ backgroundColor: `${s.color}22` }}>
+                <div className="mb-1 flex items-center justify-between px-1">
+                  <span className="flex gap-1" aria-hidden="true">
+                    <span className="h-2 w-2 rounded-full border border-ink" style={{ backgroundColor: s.color }} />
+                    <span className="h-2 w-2 rounded-full border border-ink" style={{ backgroundColor: s.color }} />
+                    <span className="h-2 w-2 rounded-full border border-ink" style={{ backgroundColor: s.color }} />
+                  </span>
                   <span className="text-[10px] font-bold text-ink-soft">পিঠ ১</span>
                 </div>
-                <div className="mt-2 rounded-lg border-2 border-ink bg-brand-deep py-2 text-center">
-                  <span className="font-display text-xl font-extrabold text-marigold">{s.label_bn}</span>
-                </div>
-                <div className="tape-ribbon mx-8 -mb-1 h-1.5 rounded-b-md" aria-hidden="true" />
+                <CassetteArtwork label={s.label_bn} accent={s.color} shell={shell} />
               </div>
               <p className="mt-3 font-bold">{s.sub_bn}</p>
               <p className="text-xs text-ink-soft">{toBn(count)}টি স্মৃতির ভান্ডার</p>
