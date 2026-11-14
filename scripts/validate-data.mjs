@@ -36,6 +36,7 @@ const vocabulary = load("vocabulary.json");
 const references = load("references.json");
 const flags = load("review-flags.json");
 const scoring = load("scoring.config.json");
+const eraQuotes = load("era-quotes.json");
 
 const eraIds = new Set((eras?.eras ?? []).map((e) => e.era_id));
 const categoryIds = new Set((categories?.categories ?? []).map((c) => c.category_id));
@@ -150,6 +151,26 @@ if (flags) {
 
 // ---------- scoring config ----------
 if (scoring && scoring.status !== "approved") note(`scoring.config.json: status '${scoring.status}' — scores must not be presented as final.`);
+
+// ---------- era quote bank ----------
+if (eraQuotes) {
+  const quoteIds = new Set();
+  for (const quote of eraQuotes.quotes ?? []) {
+    if (quoteIds.has(quote.quote_id)) err(`era-quotes.json: duplicate quote_id '${quote.quote_id}'`);
+    quoteIds.add(quote.quote_id);
+    if (!quote.text_bn || !quote.attribution_bn) err(`era-quotes.json: ${quote.quote_id} missing text or attribution`);
+    if (!["original_caption", "public_domain_literature", "media_excerpt"].includes(quote.quote_type))
+      err(`era-quotes.json: ${quote.quote_id} has invalid quote_type '${quote.quote_type}'`);
+    if (quote.quote_type !== "original_caption" && !quote.source_url)
+      err(`era-quotes.json: ${quote.quote_id} is sourced but has no source_url`);
+  }
+  for (const eraId of ["80s", "90s", "2000s"]) {
+    const originals = (eraQuotes.quotes ?? []).filter((quote) =>
+      quote.era_id === eraId && quote.quote_type === "original_caption"
+    ).length;
+    if (originals < 100) err(`era-quotes.json: ${eraId} has ${originals} original captions; minimum is 100`);
+  }
+}
 
 // ---------- report ----------
 const line = (t) => console.log(t);

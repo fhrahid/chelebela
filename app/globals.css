@@ -10,8 +10,8 @@
   Fonts per SRS §7.1: Hind Siliguri (body) + Baloo Da 2 (display).
 */
 @theme {
-  --font-sans: var(--font-noto), "Noto Sans Bengali", "Noto Sans", sans-serif;
-  --font-display: var(--font-hind), "Hind Siliguri", var(--font-noto), sans-serif;
+  --font-sans: "Noto Sans Bengali", "Noto Sans", sans-serif;
+  --font-display: "Hind Siliguri", "Noto Sans Bengali", sans-serif;
 
   --color-paper: #f0dab8;
   --color-paper-soft: #f7ead0;

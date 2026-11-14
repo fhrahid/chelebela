@@ -19,6 +19,7 @@ import { CONTENT_REVIEW_NOTE, DEFAULT_DATASET } from "@/lib/data";
 import { computeResult } from "@/lib/scoring";
 import { getEraSet } from "@/lib/quiz";
 import { eraArtById, randomEraArt, type EraArt } from "@/lib/era-art";
+import { eraQuoteById, randomEraQuote, quoteKindLabel, type EraQuote } from "@/lib/era-quotes";
 import { quizStorage } from "@/lib/storage";
 import { toBn, toBnPct } from "@/lib/bn";
 import type { Responses } from "@/lib/types";
@@ -31,6 +32,7 @@ export default function ResultPage() {
   const [pendingCompare, setPendingCompare] = useState<string | null>(null);
   const [displayScore, setDisplayScore] = useState(0);
   const [resultArt, setResultArt] = useState<EraArt | null>(null);
+  const [resultQuote, setResultQuote] = useState<EraQuote | null>(null);
 
   useEffect(() => {
     const stored = quizStorage.loadResult();
@@ -41,8 +43,11 @@ export default function ResultPage() {
       const storedResult = computeResult(stored.responses, DEFAULT_DATASET, { askedItemIds: stored.askedIds });
       const leadingEra = storedResult.eraProfile[0]?.era_id ?? getEraSet(stored.setId)?.era;
       const chosenArt = eraArtById(stored.eraArtId) ?? randomEraArt(leadingEra);
+      const chosenQuote = eraQuoteById(stored.eraQuoteId) ?? randomEraQuote(leadingEra);
       setResultArt(chosenArt);
+      setResultQuote(chosenQuote);
       if (!stored.eraArtId && chosenArt) quizStorage.saveResultArtId(chosenArt.art_id);
+      if (!stored.eraQuoteId && chosenQuote) quizStorage.saveResultQuoteId(chosenQuote.quote_id);
     }
     const pending = quizStorage.loadPendingCompare();
     if (pending) setPendingCompare(pending.payload);
@@ -179,6 +184,35 @@ export default function ResultPage() {
         </Reveal>
       )}
 
+      {resultQuote && (
+        <Reveal>
+          <figure className="mt-5 rounded-2xl border-2 border-ink bg-paper-card px-5 py-4 text-center shadow-hard-sm">
+            <span className="font-display text-4xl font-extrabold leading-none text-brick" aria-hidden="true">“</span>
+            <blockquote className="font-display text-lg font-bold leading-[1.55] text-brand sm:text-xl">
+              {resultQuote.text_bn}
+            </blockquote>
+            <figcaption className="mt-2 flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-xs text-ink-soft">
+              <span>{resultQuote.attribution_bn}</span>
+              <span aria-hidden="true">·</span>
+              <span>{quoteKindLabel(resultQuote.quote_type)}</span>
+              {resultQuote.source_url && (
+                <a
+                  href={resultQuote.source_url}
+                  target={resultQuote.source_url.startsWith("http") ? "_blank" : undefined}
+                  rel={resultQuote.source_url.startsWith("http") ? "noreferrer" : undefined}
+                  className="underline underline-offset-2"
+                >
+                  সূত্র
+                </a>
+              )}
+            </figcaption>
+            <p className="mt-1 text-[10px] leading-relaxed text-ink-soft/80">
+              {resultQuote.source_note_bn}
+            </p>
+          </figure>
+        </Reveal>
+      )}
+
       {/* era profile */}
       <Reveal>
         <section className="mt-6 rounded-2xl border-2 border-ink bg-paper-card p-5 shadow-hard-sm" aria-labelledby="era-heading">
@@ -224,6 +258,7 @@ export default function ResultPage() {
           <CassetteCard
             result={result}
             art={eraArt}
+            quote={resultQuote}
             dominantEra={dominantEra}
             dominantEraLabel={result.eraProfile[0]?.label_bn ?? set?.label_bn}
           />

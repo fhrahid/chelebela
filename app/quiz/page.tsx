@@ -20,6 +20,7 @@ import { ALL_QUESTIONS_COUNT, answeredTooFast, COUNT_OPTIONS, DEFAULT_QUIZ_LENGT
 import { quizStorage } from "@/lib/storage";
 import { computeResult } from "@/lib/scoring";
 import { randomEraArt } from "@/lib/era-art";
+import { randomEraQuote } from "@/lib/era-quotes";
 import { toBn, toBnFraction } from "@/lib/bn";
 import type { MemoryItem, ResponseValue, Responses } from "@/lib/types";
 
@@ -111,7 +112,8 @@ function QuizFlow() {
           const finalResult = computeResult(nextResponses, DEFAULT_DATASET, { askedItemIds: askedIds });
           const leadingEra = finalResult.eraProfile[0]?.era_id ?? getEraSet(setId)?.era;
           const art = randomEraArt(leadingEra);
-          quizStorage.saveResult(nextResponses, askedIds, setId, art?.art_id);
+          const quote = randomEraQuote(leadingEra);
+          quizStorage.saveResult(nextResponses, askedIds, setId, art?.art_id, quote?.quote_id);
           quizStorage.addSeenIds(setId, Object.keys(nextResponses));
           quizStorage.clearProgress();
           router.push("/result");

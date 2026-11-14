@@ -4,6 +4,7 @@
 import Image from "next/image";
 import AlponaFlower from "@/components/AlponaFlower";
 import type { EraArt } from "@/lib/era-art";
+import { quoteKindLabel, type EraQuote } from "@/lib/era-quotes";
 import type { QuizResult } from "@/lib/types";
 import { toBn, toBnPct } from "@/lib/bn";
 
@@ -17,12 +18,14 @@ const ERA_COLORS: Record<string, string> = {
 export default function CassetteCard({
   result,
   art,
+  quote,
   cardId = "result-card",
   dominantEra,
   dominantEraLabel,
 }: {
   result: QuizResult;
   art: EraArt | null;
+  quote: EraQuote | null;
   cardId?: string;
   dominantEra?: string;
   dominantEraLabel?: string;
@@ -72,6 +75,19 @@ export default function CassetteCard({
             “{art.title}” · {art.artist} · {art.license} · Wikimedia Commons
           </figcaption>
         </figure>
+      )}
+
+      {quote && (
+        <blockquote className="mt-3 rounded-xl border-2 border-dashed border-brick/60 bg-paper-soft px-3 py-2.5 text-center">
+          <p className="font-display text-sm font-bold leading-[1.5] text-brand">“{quote.text_bn}”</p>
+          <p className="mt-1 text-[9px] leading-[1.4] text-ink-soft">
+            {quote.attribution_bn} · {quoteKindLabel(quote.quote_type)}
+            {quote.source_url
+              ? ` · সূত্র: ${quote.quote_type === "media_excerpt" ? "মীনা থিম গান" : "bn.wikisource.org"}`
+              : ""}
+          </p>
+          <p className="mt-1 text-[8px] leading-[1.35] text-ink-soft/80">{quote.source_note_bn}</p>
+        </blockquote>
       )}
 
       {/* Score sticker */}

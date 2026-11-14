@@ -1,25 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Hind_Siliguri, Noto_Sans_Bengali } from "next/font/google";
+import "@fontsource/noto-sans-bengali/bengali-400.css";
+import "@fontsource/noto-sans-bengali/bengali-500.css";
+import "@fontsource/noto-sans-bengali/bengali-600.css";
+import "@fontsource/noto-sans-bengali/bengali-700.css";
+import "@fontsource/noto-sans-bengali/latin-400.css";
+import "@fontsource/noto-sans-bengali/latin-500.css";
+import "@fontsource/noto-sans-bengali/latin-600.css";
+import "@fontsource/noto-sans-bengali/latin-700.css";
+import "@fontsource/hind-siliguri/bengali-600.css";
+import "@fontsource/hind-siliguri/bengali-700.css";
+import "@fontsource/hind-siliguri/latin-600.css";
+import "@fontsource/hind-siliguri/latin-700.css";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
-
-// Use a broad Bengali text face for conjunct/diacritic coverage, with Hind
-// Siliguri for display. next/font self-hosts both subsets to avoid runtime
-// font-loading and fallback inconsistencies.
-const noto = Noto_Sans_Bengali({
-  subsets: ["bengali", "latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-noto",
-  display: "swap",
-});
-
-const hind = Hind_Siliguri({
-  subsets: ["bengali", "latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-hind",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: {
@@ -48,7 +42,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="bn" className={`${noto.variable} ${hind.variable}`}>
+    <html lang="bn">
       <body className="flex min-h-dvh flex-col font-sans antialiased">
         <SiteHeader />
         <main className="relative z-10 flex-1">{children}</main>
