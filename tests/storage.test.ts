@@ -22,14 +22,17 @@ describe("quiz result persistence", () => {
       MEM_002: "not_experienced" as const,
       MEM_003: "not_applicable" as const,
     };
-    quizStorage.saveResult(responses, Object.keys(responses), "90s");
+    quizStorage.saveResult(responses, Object.keys(responses), "90s", "90s-cassette-still-life");
 
     expect(quizStorage.loadResult()).toMatchObject({
       responses,
       askedIds: ["MEM_001", "MEM_002", "MEM_003"],
       setId: "90s",
       questionCount: 3,
+      eraArtId: "90s-cassette-still-life",
     });
+    // Re-reading after a result-page refresh returns the exact same selected art.
+    expect(quizStorage.loadResult()?.eraArtId).toBe("90s-cassette-still-life");
   });
 
   it("returns null instead of breaking the result route on corrupted saved JSON", () => {

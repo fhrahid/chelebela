@@ -31,7 +31,7 @@ export function resultLabelForProfile(profile: EraShare[]): { title_bn: string; 
 
   if (third && third.share >= 15) {
     return {
-      title_bn: "তিন দশক জুড়ে বাচ্চা",
+      title_bn: "তিন দশকের মিশ্র স্মৃতি",
       sub_bn: "আশি, নব্বই আর দুই হাজার — তিন দশকের স্মৃতি মিলেমিশে আছে তোমার ছেলেবেলায়।",
     };
   }

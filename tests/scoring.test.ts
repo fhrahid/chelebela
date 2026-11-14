@@ -194,6 +194,18 @@ describe("result labels (OD-07 draft rules)", () => {
     expect(result.label.title_bn).toBe("দুই দশকের মাঝামাঝি বাচ্চা");
   });
 
+  it("uses a clear mixed-memory title when all three eras appear", () => {
+    const r: Responses = {
+      MEM_001: "experienced", // 90s
+      MEM_002: "experienced", // 90s
+      MEM_003: "experienced", // 80s
+      MEM_004: "not_experienced",
+      MEM_005: "experienced", // 2000s
+    };
+    const result = computeResult(r, fixture());
+    expect(result.label.title_bn).toBe("তিন দশকের মিশ্র স্মৃতি");
+  });
+
   it("zero experienced items gets a gentle, non-shaming label", () => {
     const r: Responses = { MEM_001: "not_experienced" };
     const result = computeResult(r, fixture());

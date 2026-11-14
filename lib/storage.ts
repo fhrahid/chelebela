@@ -15,6 +15,7 @@ const resultSchema = z.object({
   askedIds: z.array(itemId).optional(),
   setId: z.string().optional(),
   questionCount: z.number().int().positive().optional(),
+  eraArtId: z.string().min(1).optional(),
   completedAt: z.number(),
 });
 
@@ -57,6 +58,7 @@ export interface StoredResult {
   askedIds?: string[];
   setId?: string;
   questionCount?: number;
+  eraArtId?: string;
   completedAt: number;
 }
 
@@ -81,14 +83,20 @@ export const quizStorage = {
       return null;
     }
   },
-  saveResult(responses: Responses, askedIds: string[], setId: string): void {
+  saveResult(responses: Responses, askedIds: string[], setId: string, eraArtId?: string): void {
     safeSet(KEYS.result, JSON.stringify({
       responses,
       askedIds,
       setId,
       questionCount: askedIds.length,
+      ...(eraArtId ? { eraArtId } : {}),
       completedAt: Date.now(),
     }));
+  },
+  saveResultArtId(eraArtId: string): void {
+    const result = this.loadResult();
+    if (!result) return;
+    safeSet(KEYS.result, JSON.stringify({ ...result, eraArtId }));
   },
   clearResult(): void {
     safeRemove(KEYS.result);

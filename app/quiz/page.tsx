@@ -18,6 +18,8 @@ import CassetteArtwork from "@/components/CassetteArtwork";
 import { CONTENT_REVIEW_NOTE, DEFAULT_DATASET, TOTAL_ITEMS } from "@/lib/data";
 import { ALL_QUESTIONS_COUNT, answeredTooFast, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, getEraSet, sampleQuiz, setPool } from "@/lib/quiz";
 import { quizStorage } from "@/lib/storage";
+import { computeResult } from "@/lib/scoring";
+import { randomEraArt } from "@/lib/era-art";
 import { toBn, toBnFraction } from "@/lib/bn";
 import type { MemoryItem, ResponseValue, Responses } from "@/lib/types";
 
@@ -105,7 +107,11 @@ function QuizFlow() {
         submittingRef.current = true;
         // Save the exact latest map; don't depend on React's async state flush.
         setTimeout(() => {
-          quizStorage.saveResult(nextResponses, quizItems.map((item) => item.item_id), setId);
+          const askedIds = quizItems.map((item) => item.item_id);
+          const finalResult = computeResult(nextResponses, DEFAULT_DATASET, { askedItemIds: askedIds });
+          const leadingEra = finalResult.eraProfile[0]?.era_id ?? getEraSet(setId)?.era;
+          const art = randomEraArt(leadingEra);
+          quizStorage.saveResult(nextResponses, askedIds, setId, art?.art_id);
           quizStorage.addSeenIds(setId, Object.keys(nextResponses));
           quizStorage.clearProgress();
           router.push("/result");

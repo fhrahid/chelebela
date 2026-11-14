@@ -18,7 +18,7 @@ import Reveal from "@/components/Reveal";
 import { CONTENT_REVIEW_NOTE, DEFAULT_DATASET } from "@/lib/data";
 import { computeResult } from "@/lib/scoring";
 import { getEraSet } from "@/lib/quiz";
-import { randomEraArt, type EraArt } from "@/lib/era-art";
+import { eraArtById, randomEraArt, type EraArt } from "@/lib/era-art";
 import { quizStorage } from "@/lib/storage";
 import { toBn, toBnPct } from "@/lib/bn";
 import type { Responses } from "@/lib/types";
@@ -40,7 +40,9 @@ export default function ResultPage() {
       setSetId(stored.setId);
       const storedResult = computeResult(stored.responses, DEFAULT_DATASET, { askedItemIds: stored.askedIds });
       const leadingEra = storedResult.eraProfile[0]?.era_id ?? getEraSet(stored.setId)?.era;
-      setResultArt(randomEraArt(leadingEra));
+      const chosenArt = eraArtById(stored.eraArtId) ?? randomEraArt(leadingEra);
+      setResultArt(chosenArt);
+      if (!stored.eraArtId && chosenArt) quizStorage.saveResultArtId(chosenArt.art_id);
     }
     const pending = quizStorage.loadPendingCompare();
     if (pending) setPendingCompare(pending.payload);
@@ -154,13 +156,13 @@ export default function ResultPage() {
       {eraArt && (
         <Reveal>
           <figure className="mt-6 overflow-hidden rounded-2xl border-2 border-ink bg-paper-card shadow-hard-sm">
-            <div className="relative aspect-[16/9]">
+            <div className="relative aspect-[4/3] bg-brand-deep p-2 sm:aspect-[16/9]">
               <Image
                 src={eraArt.src}
                 alt={eraArt.caption_bn}
                 fill
                 sizes="(max-width: 672px) 100vw, 640px"
-                className={dominantEra === "80s" ? "object-cover grayscale contrast-125" : "object-cover"}
+                className={dominantEra === "80s" ? "object-contain grayscale contrast-125" : "object-contain"}
                 priority
               />
               <span className="absolute bottom-2 left-2 rounded-full border border-paper/60 bg-ink/75 px-3 py-1 text-xs font-bold text-paper">
