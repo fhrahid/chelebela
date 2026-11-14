@@ -52,7 +52,7 @@ export default function AdminDashboard() {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(`/api/admin/metrics?days=${range}`, { cache: "no-store" });
+      const response = await fetch(`/api/chhelebela-insights-7f3c9a/metrics?days=${range}`, { cache: "no-store" });
       if (response.status === 401) {
         setAuthenticated(false);
         setData(null);
@@ -84,7 +84,7 @@ export default function AdminDashboard() {
     setError("");
     setLoading(true);
     try {
-      const response = await fetch("/api/admin/login", {
+      const response = await fetch("/api/chhelebela-insights-7f3c9a/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ password }),
@@ -111,7 +111,7 @@ export default function AdminDashboard() {
   }
 
   async function logout() {
-    await fetch("/api/admin/logout", { method: "POST" }).catch(() => undefined);
+    await fetch("/api/chhelebela-insights-7f3c9a/logout", { method: "POST" }).catch(() => undefined);
     setAuthenticated(false);
     setData(null);
   }

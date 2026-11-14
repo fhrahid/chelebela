@@ -10,7 +10,7 @@ export default function VisitorTracker() {
   const firstView = useRef(true);
 
   useEffect(() => {
-    if (!pathname || pathname === "/admin" || pathname.startsWith("/admin/")) return;
+    if (!pathname || pathname === "/chhelebela-insights-7f3c9a" || pathname.startsWith("/chhelebela-insights-7f3c9a/")) return;
     if (lastPath.current === pathname) return;
     lastPath.current = pathname;
     trackMetric({

@@ -25,20 +25,20 @@ describe("admin access", () => {
     const session = createAdminSession();
     expect(session).not.toBeNull();
     if (!session) return;
-    const request = new Request("https://example.test/api/admin/metrics", {
+    const request = new Request("https://example.test/api/chhelebela-insights-7f3c9a/metrics", {
       headers: { cookie: `${ADMIN_COOKIE}=${session.value}` },
     });
     expect(isAdminRequest(request)).toBe(true);
-    expect(isAdminRequest(new Request("https://example.test/api/admin/metrics", {
+    expect(isAdminRequest(new Request("https://example.test/api/chhelebela-insights-7f3c9a/metrics", {
       headers: { cookie: `${ADMIN_COOKIE}=1.invalid` },
     }))).toBe(false);
   });
 
   it("requires matching same-origin headers for admin mutations", () => {
-    expect(isSameAdminOrigin(new Request("https://example.test/api/admin/login", {
+    expect(isSameAdminOrigin(new Request("https://example.test/api/chhelebela-insights-7f3c9a/login", {
       headers: { origin: "https://example.test", host: "example.test" },
     }))).toBe(true);
-    expect(isSameAdminOrigin(new Request("https://example.test/api/admin/login", {
+    expect(isSameAdminOrigin(new Request("https://example.test/api/chhelebela-insights-7f3c9a/login", {
       headers: { origin: "https://attacker.test", host: "example.test" },
     }))).toBe(false);
   });

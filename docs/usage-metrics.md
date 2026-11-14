@@ -1,8 +1,14 @@
 # Usage metrics and admin dashboard
 
-The private dashboard is at `/admin`. It shows only events actually observed by
-this deployment. The database is not pre-filled with sample visitors or demo
-numbers; empty metrics remain zero until people use the deployed app.
+The private dashboard is at `/chhelebela-insights-7f3c9a`. Its API uses the
+matching `/api/chhelebela-insights-7f3c9a/*` prefix. It shows only events
+actually observed by this deployment. The database is not pre-filled with
+sample visitors or demo numbers; empty metrics remain zero until people use the
+deployed app.
+
+The nonstandard route reduces casual scanner noise, but is not an access
+control. The dashboard still requires the password-protected session described
+below.
 
 ## Setup
 
