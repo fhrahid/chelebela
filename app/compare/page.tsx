@@ -1,15 +1,15 @@
 "use client";
 
 /**
- * Comparison view (FR-018/019/020): opens a friend's comparison link (#fragment
- * payload), validates it strictly, and — once the visitor has their own result —
- * shows shared memories and differences. No names, no identifiers (SRS §9.3).
+ * Opens an anonymous, short-ID comparison link (or a legacy fragment link).
+ * Only memories both people were asked about are compared.
  */
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCheck, Heart, TriangleAlert, Users, X } from "lucide-react";
 import { DEFAULT_DATASET } from "@/lib/data";
 import { computeResult } from "@/lib/scoring";
+import { compareResponses } from "@/lib/comparison";
 import { decodeComparisonPayload } from "@/lib/codec";
 import { quizStorage } from "@/lib/storage";
 import { getEraSet } from "@/lib/quiz";
@@ -20,32 +20,87 @@ type ViewState =
   | { kind: "loading" }
   | { kind: "no-payload" }
   | { kind: "invalid"; reason: "malformed" | "version" | "item_list_changed" }
+  | { kind: "not-found" }
+  | { kind: "server-error" }
   | { kind: "need-own-quiz" }
-  | { kind: "compare"; friend: Responses; mine: Responses; mineAsked?: string[]; mineSet?: string };
+  | {
+      kind: "compare";
+      friend: Responses;
+      friendAsked: string[];
+      mine: Responses;
+      mineAsked: string[];
+      mineSet?: string;
+    };
 
 export default function ComparePage() {
   const [view, setView] = useState<ViewState>({ kind: "loading" });
 
   useEffect(() => {
-    const payload = decodeURIComponent(window.location.hash.replace(/^#/, "")).trim();
-    if (!payload) {
-      setView({ kind: "no-payload" });
-      return;
+    let cancelled = false;
+    const pathParts = window.location.pathname.split("/").filter(Boolean);
+    const pathId = pathParts[0] === "compare" ? pathParts[1] : undefined;
+    const legacyPayload = window.location.hash.replace(/^#/, "").trim();
+
+    async function loadComparison() {
+      let friend: Responses;
+      let friendAsked: string[];
+      let pendingId: string;
+
+      if (pathId) {
+        try {
+          const response = await fetch(`/api/comparisons/${encodeURIComponent(pathId)}`, { cache: "no-store" });
+          if (response.status === 404) {
+            if (!cancelled) setView({ kind: "not-found" });
+            return;
+          }
+          if (!response.ok) {
+            if (!cancelled) setView({ kind: "server-error" });
+            return;
+          }
+          const stored = await response.json() as { responses: Responses; askedIds: string[] };
+          friend = stored.responses;
+          friendAsked = stored.askedIds;
+          pendingId = pathId;
+        } catch {
+          if (!cancelled) setView({ kind: "server-error" });
+          return;
+        }
+      } else if (legacyPayload) {
+        const decoded = decodeComparisonPayload(legacyPayload, DEFAULT_DATASET);
+        if (!decoded.ok) {
+          if (!cancelled) setView({ kind: "invalid", reason: decoded.reason });
+          return;
+        }
+        friend = decoded.responses;
+        friendAsked = Object.keys(decoded.responses);
+        pendingId = `legacy:${legacyPayload}`;
+      } else {
+        if (!cancelled) setView({ kind: "no-payload" });
+        return;
+      }
+
+      const mine = quizStorage.loadResult();
+      if (!mine) {
+        // Complete a quiz first, then return to this anonymous comparison ID.
+        quizStorage.savePendingCompare(pendingId);
+        if (!cancelled) setView({ kind: "need-own-quiz" });
+        return;
+      }
+      quizStorage.clearPendingCompare();
+      if (!cancelled) {
+        setView({
+          kind: "compare",
+          friend,
+          friendAsked,
+          mine: mine.responses,
+          mineAsked: mine.askedIds ?? Object.keys(mine.responses),
+          mineSet: mine.setId,
+        });
+      }
     }
-    const decoded = decodeComparisonPayload(payload, DEFAULT_DATASET);
-    if (!decoded.ok) {
-      setView({ kind: "invalid", reason: decoded.reason });
-      return;
-    }
-    const mine = quizStorage.loadResult();
-    if (!mine) {
-      // Visitor must complete their own quiz first (FR-018); remember the payload.
-      quizStorage.savePendingCompare(payload);
-      setView({ kind: "need-own-quiz" });
-      return;
-    }
-    quizStorage.clearPendingCompare();
-    setView({ kind: "compare", friend: decoded.responses, mine: mine.responses, mineAsked: mine.askedIds, mineSet: mine.setId });
+
+    void loadComparison();
+    return () => { cancelled = true; };
   }, []);
 
   return (
@@ -70,94 +125,133 @@ export default function ComparePage() {
         </Card>
       )}
 
+      {view.kind === "not-found" && (
+        <Card title="তুলনা লিংকটি আর চালু নেই" tone="warn">
+          <p>লিংকটি হয়তো ৩০ দিন পার হওয়ায় মুছে গেছে, অথবা ঠিকমতো কপি হয়নি। বন্ধুকে নতুন তুলনা লিংক পাঠাতে বলো।</p>
+          <CTA href="/quiz" label="নিজের কুইজ দাও" />
+        </Card>
+      )}
+
+      {view.kind === "server-error" && (
+        <Card title="এখন তুলনাটি খোলা যাচ্ছে না" tone="warn">
+          <p>সার্ভারে সাময়িক সমস্যা হয়েছে। একটু পরে আবার চেষ্টা করো।</p>
+        </Card>
+      )}
+
       {view.kind === "need-own-quiz" && (
-        <Card title="আগে তোমার স্কোর দরকার!">
+        <Card title="আগে তোমার কুইজ দরকার!">
           <p>
-            বন্ধুর সঙ্গে তুলনা করতে হলে আগে তুমি নিজের কুইজটা দিও — শেষ করার সঙ্গে সঙ্গে তুলনাটা এখানেই দেখা যাবে।
-            তোমার উত্তর শুধু তোমার ব্রাউজারেই থাকে।
+            বন্ধুর সঙ্গে তুলনা করতে হলে আগে তুমি নিজের কুইজটা দাও। শেষ হলে ফলাফলের পাতায় এই তুলনায় ফেরার লিংক পাবে।
+            তোমার উত্তর তুলনা লিংক তৈরি না করা পর্যন্ত ব্রাউজারেই থাকে।
           </p>
           <CTA href="/quiz" label="কুইজ দাও, তারপর তুলনা" />
         </Card>
       )}
 
-      {view.kind === "compare" && <Comparison friend={view.friend} mine={view.mine} mineAsked={view.mineAsked} mineSet={view.mineSet} />}
+      {view.kind === "compare" && (
+        <Comparison
+          friend={view.friend}
+          friendAsked={view.friendAsked}
+          mine={view.mine}
+          mineAsked={view.mineAsked}
+          mineSet={view.mineSet}
+        />
+      )}
     </div>
   );
 }
 
-function Comparison({ friend, mine, mineAsked, mineSet }: { friend: Responses; mine: Responses; mineAsked?: string[]; mineSet?: string }) {
-  // Each session answers its own random sample: score over answered/asked items only.
+function Comparison({
+  friend,
+  friendAsked,
+  mine,
+  mineAsked,
+  mineSet,
+}: {
+  friend: Responses;
+  friendAsked: string[];
+  mine: Responses;
+  mineAsked: string[];
+  mineSet?: string;
+}) {
+  // Each session can have a different random sample. First intersect the
+  // explicit asked-ID lists, then exclude N/A from one-sided experience counts.
   const friendResult = useMemo(
-    () => computeResult(friend, DEFAULT_DATASET, { askedItemIds: Object.keys(friend) }),
-    [friend]
+    () => computeResult(friend, DEFAULT_DATASET, { askedItemIds: friendAsked }),
+    [friend, friendAsked]
   );
   const myResult = useMemo(
-    () => computeResult(mine, DEFAULT_DATASET, { askedItemIds: mineAsked ?? Object.keys(mine) }),
+    () => computeResult(mine, DEFAULT_DATASET, { askedItemIds: mineAsked }),
     [mine, mineAsked]
   );
   const mySet = getEraSet(mineSet);
-
-  // Only compare items both parties were actually asked (samples differ per session).
-  const shared = DEFAULT_DATASET.items.filter(
-    (i) => mine[i.item_id] === "experienced" && friend[i.item_id] === "experienced"
-  );
-  const bothAnswered = (id: string) => mine[id] !== undefined && friend[id] !== undefined;
-  const onlyMine = DEFAULT_DATASET.items.filter(
-    (i) => bothAnswered(i.item_id) && mine[i.item_id] === "experienced" && friend[i.item_id] !== "experienced"
-  );
-  const onlyFriend = DEFAULT_DATASET.items.filter(
-    (i) => bothAnswered(i.item_id) && friend[i.item_id] === "experienced" && mine[i.item_id] !== "experienced"
+  const comparison = useMemo(
+    () => compareResponses(mine, mineAsked, friend, friendAsked, DEFAULT_DATASET),
+    [mine, mineAsked, friend, friendAsked],
   );
 
   return (
     <div>
       <section className="rounded-2xl border-2 border-ink bg-paper-card p-6 text-center shadow-hard">
-        <p className="flex items-center justify-center gap-2 font-display text-lg font-extrabold text-brand">
-          <Heart className="h-5 w-5 text-rose" aria-hidden="true" /> দুজনেই পেরেছ {toBn(shared.length)}টি স্মৃতি
+        <p className="font-display text-lg font-extrabold text-brand">
+          মিলিয়ে দেখা হয়েছে {toBn(comparison.comparableItems.length)}টি স্মৃতি
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+          দুজনকেই জিজ্ঞেস করা হয়েছিল {toBn(comparison.overlappingItems.length)}টি একই স্মৃতি। “প্রযোজ্য নয়” উত্তর বাদ দিয়ে
+          {` ${toBn(comparison.comparableItems.length)}টি`} স্মৃতির অভিজ্ঞতা তুলনা করা হয়েছে
+          {comparison.excludedNotApplicable > 0
+            ? `; ${toBn(comparison.excludedNotApplicable)}টি “প্রযোজ্য নয়” উত্তর বাদ গেছে।`
+            : "।"}
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border-2 border-ink bg-paper-soft p-3">
-            <p className="text-xs font-bold text-ink-soft">তুমি {mySet ? `· ${mySet.label_bn}` : ""}</p>
+            <p className="text-xs font-bold text-ink-soft">তোমার কুইজের স্কোর{mySet ? ` · ${mySet.label_bn}` : ""}</p>
             <p className="font-display text-3xl font-extrabold text-brand">{toBnPct(myResult.overallScore)}</p>
             <p className="text-sm font-semibold">{myResult.label.title_bn}</p>
-            <p className="mt-1 text-xs text-ink-soft">কাঁচা {toBnPct(myResult.rawScore)} · {toBn(myResult.answeredCount)}টি উত্তর</p>
+            <p className="mt-1 text-xs text-ink-soft">নিজের {toBn(myResult.answeredCount)}টি উত্তরের ভিত্তিতে</p>
           </div>
           <div className="rounded-xl border-2 border-ink bg-paper-soft p-3">
-            <p className="text-xs font-bold text-ink-soft">বন্ধু</p>
+            <p className="text-xs font-bold text-ink-soft">বন্ধুর কুইজের স্কোর</p>
             <p className="font-display text-3xl font-extrabold text-flame">{toBnPct(friendResult.overallScore)}</p>
             <p className="text-sm font-semibold">{friendResult.label.title_bn}</p>
-            <p className="mt-1 text-xs text-ink-soft">কাঁচা {toBnPct(friendResult.rawScore)} · {toBn(friendResult.answeredCount)}টি উত্তর</p>
+            <p className="mt-1 text-xs text-ink-soft">নিজের {toBn(friendResult.answeredCount)}টি উত্তরের ভিত্তিতে</p>
           </div>
         </div>
-        {mySet && (
-          <p className="mt-3 text-xs text-ink-soft">
-            দুজনে ভিন্ন ভিন্ন এলোমেলো প্রশ্ন পেয়েছ — তাই তুলনায় শুধু দুজনেরই উত্তর দেওয়া স্মৃতিগুলোই আসে।
-          </p>
-        )}
+        <p className="mt-3 text-xs text-ink-soft">
+          স্কোর দুজনের নিজ নিজ কুইজের নমুনা থেকে; নিচের স্মৃতির তালিকাগুলো শুধু একই প্রশ্নের উত্তর মিলিয়ে দেখায়।
+        </p>
       </section>
 
       <ListBlock
-        title={`দুজনেই পেরেছ (${toBn(shared.length)})`}
-        icon={<CheckCheck className="h-5 w-5 text-leaf" aria-hidden="true" />}
-        items={shared}
-        emptyText="দুজনের মিল একদম শূন্য — এও এক রকম রেকর্ড!"
+        title={`দুজনেরই এই অভিজ্ঞতা হয়েছে (${toBn(comparison.shared.length)})`}
+        icon={<Heart className="h-5 w-5 text-leaf" aria-hidden="true" />}
+        items={comparison.shared}
+        emptyText="একই প্রশ্নের উত্তরে, দুজনেরই এই অভিজ্ঞতা হয়েছে—এমন স্মৃতি নেই।"
         tone="leaf"
       />
       <ListBlock
-        title={`তুমি পেরেছ, বন্ধু পারেনি (${toBn(onlyMine.length)})`}
+        title={`তোমার অভিজ্ঞতা হয়েছে, বন্ধুর হয়নি (${toBn(comparison.onlyMine.length)})`}
         icon={<Users className="h-5 w-5 text-brand" aria-hidden="true" />}
-        items={onlyMine.slice(0, 12)}
-        moreCount={Math.max(0, onlyMine.length - 12)}
-        emptyText="দুজনের উত্তর মিলিয়ে এমন কোনো স্মৃতি নেই, যা তুমি পেরেছ কিন্তু তোমার বন্ধু পারেনি।"
+        items={comparison.onlyMine.slice(0, 12)}
+        moreCount={Math.max(0, comparison.onlyMine.length - 12)}
+        emptyText="এমন কোনো একই প্রশ্ন নেই, যেখানে তোমার অভিজ্ঞতা হয়েছে কিন্তু বন্ধুর হয়নি।"
         tone="brand"
       />
       <ListBlock
-        title={`বন্ধু পেরেছে, তুমি পারোনি (${toBn(onlyFriend.length)})`}
+        title={`বন্ধুর অভিজ্ঞতা হয়েছে, তোমার হয়নি (${toBn(comparison.onlyFriend.length)})`}
         icon={<X className="h-5 w-5 text-flame" aria-hidden="true" />}
-        items={onlyFriend.slice(0, 12)}
-        moreCount={Math.max(0, onlyFriend.length - 12)}
-        emptyText="দুজনের উত্তর মিলিয়ে এমন কোনো স্মৃতি নেই, যা তোমার বন্ধু পেরেছে কিন্তু তুমি পারোনি।"
+        items={comparison.onlyFriend.slice(0, 12)}
+        moreCount={Math.max(0, comparison.onlyFriend.length - 12)}
+        emptyText="এমন কোনো একই প্রশ্ন নেই, যেখানে বন্ধুর অভিজ্ঞতা হয়েছে কিন্তু তোমার হয়নি।"
         tone="flame"
+      />
+      <ListBlock
+        title={`দুজনের কারও এই অভিজ্ঞতা হয়নি (${toBn(comparison.neither.length)})`}
+        icon={<CheckCheck className="h-5 w-5 text-ink-soft" aria-hidden="true" />}
+        items={comparison.neither.slice(0, 12)}
+        moreCount={Math.max(0, comparison.neither.length - 12)}
+        emptyText="একই প্রশ্নের উত্তরে, দুজনের কারও হয়নি—এমন স্মৃতি নেই।"
+        tone="leaf"
       />
 
       <div className="mt-8 flex flex-wrap justify-center gap-3">

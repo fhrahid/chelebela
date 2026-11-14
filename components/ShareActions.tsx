@@ -3,26 +3,37 @@
 /**
  * Share actions (FR-015/016/017, NFR-008): download the result card as an
  * image, native Web Share (with image file when supported), and copy the
- * comparison link. Every path has a fallback.
+ * anonymous, short-ID comparison link. Every path has a fallback.
  */
 import { useState } from "react";
 import { Download, Link2, Share2, CheckCheck } from "lucide-react";
 import type { QuizResult, Responses } from "@/lib/types";
-import { buildCompareUrl } from "@/lib/codec";
 import { toBnPct } from "@/lib/bn";
 
 interface Props {
   result: QuizResult;
   responses: Responses;
+  askedIds: string[];
   cardId: string;
-  getDataset: () => import("@/lib/types").Dataset;
 }
 
-export default function ShareActions({ result, responses, cardId, getDataset }: Props) {
+export default function ShareActions({ result, responses, askedIds, cardId }: Props) {
   const [busy, setBusy] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const shareText = `আমার ছেলেবেলা স্কোর ${toBnPct(result.overallScore)} — ${result.label.title_bn}! তোমারটা কত?`;
+
+  async function createCompareUrl(): Promise<string> {
+    const response = await fetch("/api/comparisons", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ responses, askedIds }),
+    });
+    if (!response.ok) throw new Error("comparison link creation failed");
+    const { id } = await response.json() as { id: string };
+    if (!/^[A-Za-z0-9_-]{22}$/.test(id)) throw new Error("invalid comparison ID");
+    return new URL(`/compare/${id}`, window.location.origin).toString();
+  }
 
   async function captureCard(): Promise<Blob | null> {
     const el = document.getElementById(cardId);
@@ -55,8 +66,16 @@ export default function ShareActions({ result, responses, cardId, getDataset }: 
 
   async function handleShare() {
     setBusy("share");
+    let url: string;
     try {
-      const url = buildCompareUrl(responses, getDataset());
+      url = await createCompareUrl();
+    } catch {
+      alert("তুলনা লিংক তৈরি করা যায়নি — একটু পরে আবার চেষ্টা করো।");
+      setBusy(null);
+      return;
+    }
+
+    try {
       if (typeof navigator !== "undefined" && navigator.share) {
         // Try sharing the card image + link together (supported browsers)
         try {
@@ -101,8 +120,13 @@ export default function ShareActions({ result, responses, cardId, getDataset }: 
 
   async function handleCopyLink() {
     setBusy("link");
-    await copyToClipboard(buildCompareUrl(responses, getDataset()));
-    setBusy(null);
+    try {
+      await copyToClipboard(await createCompareUrl());
+    } catch {
+      alert("তুলনা লিংক তৈরি করা যায়নি — একটু পরে আবার চেষ্টা করো।");
+    } finally {
+      setBusy(null);
+    }
   }
 
   const btn =
@@ -125,7 +149,7 @@ export default function ShareActions({ result, responses, cardId, getDataset }: 
         </button>
       </div>
       <p className="mt-2 text-center text-xs text-ink-soft">
-        তুলনা লিংকে শুধু তোমার উত্তর থাকে — নাম বা অন্য কোনো তথ্য থাকে না।
+        তুলনার জন্য নাম-পরিচয় ছাড়া উত্তরগুলো ৩০ দিন রাখা হয়। লিংক যার সঙ্গে শেয়ার করবে, সে-ই তুলনা দেখতে পারবে।
       </p>
     </div>
   );

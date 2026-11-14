@@ -42,6 +42,20 @@ describe("quiz result persistence", () => {
     expect(quizStorage.loadResult()).toBeNull();
   });
 
+  it("stores the short comparison ID locally and migrates a pending legacy link", () => {
+    quizStorage.savePendingCompare("Abcdefghijklmnopqrstu_");
+    expect(quizStorage.loadPendingCompare()?.comparisonId).toBe("Abcdefghijklmnopqrstu_");
+
+    mockStorage.setItem("chhelebela:pending-compare:v1", JSON.stringify({
+      payload: "cs1.1.12345678.AA",
+      savedAt: 123,
+    }));
+    expect(quizStorage.loadPendingCompare()).toEqual({
+      comparisonId: "legacy:cs1.1.12345678.AA",
+      savedAt: 123,
+    });
+  });
+
   it("tracks seen question ids and can clear legacy progress", () => {
     quizStorage.addSeenIds("90s", ["MEM_001", "MEM_002"]);
     quizStorage.addSeenIds("mix", ["MEM_002", "MEM_003"]);

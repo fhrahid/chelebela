@@ -50,7 +50,7 @@ export default function ResultPage() {
       if (!stored.eraQuoteId && chosenQuote) quizStorage.saveResultQuoteId(chosenQuote.quote_id);
     }
     const pending = quizStorage.loadPendingCompare();
-    if (pending) setPendingCompare(pending.payload);
+    if (pending) setPendingCompare(pending.comparisonId);
     setMounted(true);
   }, []);
 
@@ -113,7 +113,9 @@ export default function ResultPage() {
       {/* pending compare banner */}
       {pendingCompare && (
         <Link
-          href={`/compare#${pendingCompare}`}
+          href={pendingCompare.startsWith("legacy:")
+            ? `/compare#${pendingCompare.slice("legacy:".length)}`
+            : `/compare/${pendingCompare}`}
           className="mb-5 flex items-center gap-3 rounded-xl border-2 border-ink bg-marigold p-4 shadow-hard-sm transition-transform hover:-translate-y-0.5"
         >
           <Users className="h-6 w-6 shrink-0" aria-hidden="true" />
@@ -263,7 +265,12 @@ export default function ResultPage() {
             dominantEraLabel={result.eraProfile[0]?.label_bn ?? set?.label_bn}
           />
           <div className="w-full max-w-md">
-            <ShareActions result={result} responses={responses} cardId="result-card" getDataset={() => DEFAULT_DATASET} />
+            <ShareActions
+              result={result}
+              responses={responses}
+              askedIds={askedIds ?? Object.keys(responses)}
+              cardId="result-card"
+            />
           </div>
         </section>
       </Reveal>

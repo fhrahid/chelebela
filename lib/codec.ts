@@ -1,5 +1,6 @@
 /**
- * Comparison payload codec (SRS FR-017/018/020, §9.3).
+ * Legacy fragment codec retained to keep older comparison links working.
+ * New links use anonymous SQLite records and short random IDs.
  *
  * Design (documented per SRS §9.3 "document the behaviour when the item list changes"):
  *  - Answers are packed 2 bits per item (00 unanswered, 01 experienced,

@@ -3,7 +3,7 @@ import AlponaFlower from "@/components/AlponaFlower";
 
 export const metadata: Metadata = {
   title: "গোপনীয়তা নীতি",
-  description: "ছেলেবেলা স্কোর কী তথ্য রাখে (প্রায় কিছুই না), কোথায় রাখে (শুধু তোমার ব্রাউজারে), আর কীভাবে মুছবে।",
+  description: "ছেলেবেলা স্কোর কী তথ্য রাখে, কোথায় রাখে, আর তুলনা লিংকের তথ্য কতদিন থাকে।",
 };
 
 export default function PrivacyPage() {
@@ -23,7 +23,7 @@ export default function PrivacyPage() {
         <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-ink-soft">
           <li>কোনো অ্যাকাউন্ট, লগইন বা রেজিস্ট্রেশন লাগে না।</li>
           <li>নাম, ইমেইল, ফোন নম্বর বা জন্মসাল — কিছুই জিজ্ঞেস করা হয় না।</li>
-          <li>তোমার উত্তর কোনো সার্ভারে পাঠানো হয় না।</li>
+          <li>কুইজের উত্তর স্বয়ংক্রিয়ভাবে সার্ভারে পাঠানো হয় না; তুলনা লিংক তৈরি করলে শুধু তুলনার জন্য দরকারি উত্তরগুলো যায়।</li>
           <li>এই সংস্করণে কোনো অ্যানালিটিক্স বা বিজ্ঞাপন ট্র্যাকার নেই।</li>
         </ul>
       </section>
@@ -41,7 +41,7 @@ export default function PrivacyPage() {
             <strong>শেষ ফলাফলের উত্তর</strong> — ফলাফল আর তুলনা পাতা কাজ করার জন্য। নতুন কুইজে নতুন এলোমেলো প্রশ্ন আসে।
           </li>
           <li>
-            <strong>অপেক্ষমাণ তুলনা</strong> — বন্ধুর লিংক খুলে নিজের কুইজ না দিলে, ফিরে এসে তুলনাটা দেখার জন্য।
+            <strong>অপেক্ষমাণ তুলনা</strong> — বন্ধুর লিংক খুলে নিজের কুইজ না দিলে, ফিরে এসে তুলনাটা দেখার জন্য। এখানে শুধু তুলনার ID থাকে, বন্ধুর উত্তর নয়।
           </li>
         </ul>
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
@@ -50,12 +50,12 @@ export default function PrivacyPage() {
       </section>
 
       <section className="mt-6 rounded-2xl border-2 border-ink bg-paper-card p-5 shadow-hard-sm">
-        <h2 className="font-display text-lg font-extrabold">তুলনা লিংকে কী থাকে</h2>
+        <h2 className="font-display text-lg font-extrabold">তুলনা লিংক তৈরি করলে কী হয়</h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          তুলনা লিংকের <code className="rounded bg-paper-soft px-1">#</code>-এর পরের অংশে শুধু তোমার উত্তরের একটা
-          সংকুচিত রূপ থাকে (কোন স্মৃতিতে কী চেপেছ)। নাম বা যোগাযোগের কোনো তথ্য থাকে না। এই অংশ সার্ভারে পাঠানোও
-          হয় না — শুধু লিংক খোলা ব্রাউজারেই পড়া হয়। লিংক যাকে দেবে, সে-ই শুধু তোমার উত্তরের সঙ্গে তার উত্তর
-          মেলাতে পারবে।
+          “তুলনা লিংক কপি” বা শেয়ার চাপলে তোমার উত্তর ও কোন প্রশ্নগুলো করা হয়েছিল—শুধু এই তথ্য SQLite-এ রাখা হয়।
+          কোনো নাম, ইমেইল, ফোন নম্বর, অ্যাকাউন্ট বা ডিভাইস ID রাখা হয় না। প্রতিটি লিংকে এলোমেলো, অনুমান করা কঠিন
+          একটি ID থাকে; লিংক যার কাছে থাকবে, সে উত্তরগুলো দেখে তুলনা করতে পারবে। লিংক ৩০ দিন পর মেয়াদোত্তীর্ণ হয়;
+          মেয়াদোত্তীর্ণ তথ্য পরের তুলনা-অনুরোধে মুছে ফেলা হয়। তুমি তুলনা লিংক না বানালে উত্তর সার্ভারে যায় না।
         </p>
       </section>
 
@@ -77,8 +77,8 @@ export default function PrivacyPage() {
       <section className="mt-6 rounded-2xl border-2 border-ink bg-paper-card p-5 shadow-hard-sm">
         <h2 className="font-display text-lg font-extrabold">মুছে ফেলতে চাইলে</h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          ব্রাউজার সেটিংস থেকে সাইটের ডেটা মুছে দিলেই (বা কুইজে “প্রথম থেকে শুরু” চাপলে অগ্রগতি মুছে যাবে) সব
-          শেষ। আমাদের কাছে তোমার কোনো তথ্য থাকেই না, তাই আলাদা করে আবেদনও লাগে না।
+          ব্রাউজার সেটিংস থেকে সাইটের ডেটা মুছে দিলে সেখানে থাকা ফলাফল ও প্রশ্নের ইতিহাস মুছে যাবে। শেয়ার করা
+          তুলনা-তথ্য ৩০ দিন পর মেয়াদোত্তীর্ণ হয়; মেয়াদোত্তীর্ণ রেকর্ড পরের তুলনা-অনুরোধের সময় পরিষ্কার করা হয়।
         </p>
       </section>
 

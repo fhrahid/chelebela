@@ -21,7 +21,14 @@ const resultSchema = z.object({
 });
 
 const seenSchema = z.record(z.array(itemId));
-const pendingCompareSchema = z.object({ payload: z.string().min(1).max(4096), savedAt: z.number() });
+const pendingCompareSchema = z.object({
+  comparisonId: z.string().min(1).max(4096),
+  savedAt: z.number(),
+});
+const legacyPendingCompareSchema = z.object({
+  payload: z.string().min(1).max(4096),
+  savedAt: z.number(),
+});
 
 const KEYS = {
   progress: "chhelebela:progress:v1", // old key, cleared for backwards compatibility
@@ -65,7 +72,7 @@ export interface StoredResult {
 }
 
 export interface StoredPendingCompare {
-  payload: string;
+  comparisonId: string;
   savedAt: number;
 }
 
@@ -114,14 +121,21 @@ export const quizStorage = {
     const raw = safeGet(KEYS.pendingCompare);
     if (!raw) return null;
     try {
-      const parsed = pendingCompareSchema.safeParse(JSON.parse(raw));
-      return parsed.success ? parsed.data : null;
+      const value = JSON.parse(raw);
+      const parsed = pendingCompareSchema.safeParse(value);
+      if (parsed.success) return parsed.data;
+      // Migrate pending links saved by the old fragment-based comparison flow.
+      const legacy = legacyPendingCompareSchema.safeParse(value);
+      if (legacy.success) {
+        return { comparisonId: `legacy:${legacy.data.payload}`, savedAt: legacy.data.savedAt };
+      }
+      return null;
     } catch {
       return null;
     }
   },
-  savePendingCompare(payload: string): void {
-    safeSet(KEYS.pendingCompare, JSON.stringify({ payload, savedAt: Date.now() }));
+  savePendingCompare(comparisonId: string): void {
+    safeSet(KEYS.pendingCompare, JSON.stringify({ comparisonId, savedAt: Date.now() }));
   },
   clearPendingCompare(): void {
     safeRemove(KEYS.pendingCompare);
