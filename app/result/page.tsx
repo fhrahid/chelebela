@@ -9,7 +9,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, BarChart3, Disc3, ImagePlus, Info, Sparkles, Users, X } from "lucide-react";
-import CassetteCard, { CARD_FORMATS, PHOTO_FILTERS, type CardFormat, type PhotoFilter } from "@/components/CassetteCard";
+import CassetteCard, {
+  CARD_FORMATS,
+  PHOTO_FILTERS,
+  type CardFormat,
+  type PhotoFilter,
+  type PhotoPosition,
+} from "@/components/CassetteCard";
 import AlponaFlower from "@/components/AlponaFlower";
 import EraBars from "@/components/EraBars";
 import CategoryBars from "@/components/CategoryBars";
@@ -44,6 +50,7 @@ export default function ResultPage() {
   const [cardFormat, setCardFormat] = useState<CardFormat>("square");
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [photoFilter, setPhotoFilter] = useState<PhotoFilter>("90s");
+  const [photoPosition, setPhotoPosition] = useState<PhotoPosition>({ x: 50, y: 50 });
   const [photoError, setPhotoError] = useState<string | null>(null);
 
   const showStoredResult = useCallback((stored: StoredResult) => {
@@ -167,6 +174,7 @@ export default function ResultPage() {
       const dataUrl = await downscaleToDataUrl(file, 1200);
       setPhotoUrl(dataUrl);
       setPhotoFilter(result.eraProfile[0]?.era_id === "80s" ? "80s" : "90s");
+      setPhotoPosition({ x: 50, y: 50 });
       setPhotoError(null);
     } catch {
       setPhotoError("ছবিটা পড়া গেল না — অন্য একটা ছবি দিয়ে চেষ্টা করো।");
@@ -420,25 +428,51 @@ export default function ResultPage() {
               )}
             </div>
             {photoUrl && (
-              <div className="flex flex-wrap justify-center gap-2" role="radiogroup" aria-label="ছবির ফিল্টার বেছে নাও">
-                {PHOTO_FILTERS.map((filterSpec) => {
-                  const active = photoFilter === filterSpec.id;
-                  return (
-                    <button
-                      key={filterSpec.id}
-                      type="button"
-                      role="radio"
-                      aria-checked={active}
-                      onClick={() => setPhotoFilter(filterSpec.id)}
-                      className={`min-h-11 rounded-xl border-2 border-ink px-3 py-1.5 text-center text-sm font-bold transition-transform active:scale-95 ${
-                        active ? "bg-marigold shadow-hard-sm" : "bg-paper-card"
-                      }`}
-                    >
-                      {filterSpec.label}
-                    </button>
-                  );
-                })}
-              </div>
+              <>
+                <div className="flex flex-wrap justify-center gap-2" role="radiogroup" aria-label="ছবির ফিল্টার বেছে নাও">
+                  {PHOTO_FILTERS.map((filterSpec) => {
+                    const active = photoFilter === filterSpec.id;
+                    return (
+                      <button
+                        key={filterSpec.id}
+                        type="button"
+                        role="radio"
+                        aria-checked={active}
+                        onClick={() => setPhotoFilter(filterSpec.id)}
+                        className={`min-h-11 rounded-xl border-2 border-ink px-3 py-1.5 text-center text-sm font-bold transition-transform active:scale-95 ${
+                          active ? "bg-marigold shadow-hard-sm" : "bg-paper-card"
+                        }`}
+                      >
+                        {filterSpec.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="flex flex-col items-center gap-1.5">
+                  <p className="text-xs font-semibold text-ink-soft">
+                    ছবির অবস্থান ঠিক করো — কার্ডে ছবিটা টেনে ধরেও সরানো যায়
+                  </p>
+                  <div className="grid grid-cols-3 gap-1 rounded-lg border-2 border-ink/30 bg-paper-soft p-1.5">
+                    {PHOTO_GRID.map(([gx, gy]) => {
+                      const active = photoPosition.x === gx && photoPosition.y === gy;
+                      return (
+                        <button
+                          key={`${gx}-${gy}`}
+                          type="button"
+                          aria-label={`ছবি ${gx === 0 ? "বাঁয়ে" : gx === 100 ? "ডানে" : "মাঝে"}, ${
+                            gy === 0 ? "উপরে" : gy === 100 ? "নিচে" : "মাঝে"
+                          }`}
+                          aria-pressed={active}
+                          onClick={() => setPhotoPosition({ x: gx, y: gy })}
+                          className={`h-6 w-6 rounded-md border-2 transition-transform active:scale-90 ${
+                            active ? "border-ink bg-brand" : "border-ink/30 bg-paper-card hover:bg-paper-soft"
+                          }`}
+                        />
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
             )}
             {photoError && <p className="text-xs font-semibold text-brick">{photoError}</p>}
           </div>
@@ -453,6 +487,8 @@ export default function ResultPage() {
               format={cardFormat}
               photoUrl={photoUrl}
               photoFilter={photoFilter}
+              photoPosition={photoPosition}
+              onPhotoPositionChange={setPhotoPosition}
             />
           </ScaledCardPreview>
           <div className="w-full max-w-md">
@@ -560,6 +596,13 @@ function ScaledCardPreview({ format, children }: { format: CardFormat; children:
     </div>
   );
 }
+
+/** 3×3 crop anchors (object-position %) for repositioning the personal photo. */
+const PHOTO_GRID: Array<[number, number]> = [
+  [0, 0], [50, 0], [100, 0],
+  [0, 50], [50, 50], [100, 50],
+  [0, 100], [50, 100], [100, 100],
+];
 
 /**
  * Loads a picked photo as a JPEG data URL capped at maxEdge on its longest

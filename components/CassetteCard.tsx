@@ -4,9 +4,11 @@
  * Downloadable cassette-J-card result card. The card renders at a fixed CSS
  * pixel size for the chosen social format so the captured PNG (at pixelRatio
  * 2) matches each platform exactly: feed 1200×630, square 1080×1080, portrait
- * 1080×1350, story 1080×1920. A personal photo can replace the era artwork,
- * with a retro 80s/90s film filter applied on top.
+ * 1080×1350, story 1080×1920. A personal photo can replace the era artwork —
+ * draggable/grid-repositionable, with intensified retro 80s/90s film filters
+ * and an old-print frame with warped edges and a film date stamp.
  */
+import { useRef } from "react";
 import Image from "next/image";
 import AlponaFlower from "@/components/AlponaFlower";
 import type { EraArt } from "@/lib/era-art";
@@ -40,12 +42,41 @@ export const PHOTO_FILTERS: Array<{ id: PhotoFilter; label: string }> = [
   { id: "none", label: "ফিল্টার ছাড়া" },
 ];
 
-/** Warm faded film for the 80s; cooler, slightly hazy compact-camera look for the 90s. */
+/** Crop position of the personal photo inside the frame, as object-position %. */
+export type PhotoPosition = { x: number; y: number };
+
+/** Warm faded film for the 80s; cooler, hazy compact-camera look for the 90s. */
 const PHOTO_FILTER_CSS: Record<PhotoFilter, string> = {
   none: "",
-  "80s": "sepia(0.32) saturate(1.4) contrast(0.95) brightness(1.06) hue-rotate(-8deg)",
-  "90s": "saturate(1.25) contrast(1.1) brightness(1.03) hue-rotate(6deg) sepia(0.12)",
+  "80s": "sepia(0.5) saturate(1.6) contrast(1.02) brightness(1.05) hue-rotate(-10deg)",
+  "90s": "saturate(1.5) contrast(1.18) brightness(1.02) hue-rotate(8deg) sepia(0.18)",
 };
+
+/**
+ * Old-print frames: irregular border radii fake warped paper edges. The 80s
+ * frame is a chunky instant print with a thick bottom; the 90s frame is a
+ * thin film print — both carry the era's classic orange camera date stamp.
+ */
+const PHOTO_FRAME: Record<"80s" | "90s", { padding: string; radius: string; background: string; date: string }> = {
+  "80s": {
+    padding: "10px 10px 24px 10px",
+    radius: "10px 15px 11px 16px / 14px 10px 15px 11px",
+    background: "linear-gradient(135deg, #f7f0dc 0%, #efe5c8 55%, #e6d9b0 100%)",
+    date: "'87 06 12",
+  },
+  "90s": {
+    padding: "9px",
+    radius: "12px 9px 13px 10px / 10px 13px 9px 12px",
+    background: "linear-gradient(135deg, #f8f6ef 0%, #efece0 60%, #e4e0cf 100%)",
+    date: "'94 11 23",
+  },
+};
+
+/** Aging stains on the paper itself, painted over the frame. */
+const FRAME_STAINS =
+  "radial-gradient(ellipse at 12% 96%, rgba(150,110,50,0.16), rgba(0,0,0,0) 34%)," +
+  "radial-gradient(ellipse at 92% 8%, rgba(150,110,50,0.11), rgba(0,0,0,0) 30%)," +
+  "radial-gradient(ellipse at 80% 100%, rgba(120,90,40,0.10), rgba(0,0,0,0) 26%)";
 
 const ERA_COLORS: Record<string, string> = {
   "80s": "var(--color-brass)",
@@ -64,6 +95,8 @@ export default function CassetteCard({
   format = "square",
   photoUrl,
   photoFilter = "none",
+  photoPosition = { x: 50, y: 50 },
+  onPhotoPositionChange,
 }: {
   result: QuizResult;
   art: EraArt | null;
@@ -74,6 +107,8 @@ export default function CassetteCard({
   format?: CardFormat;
   photoUrl?: string | null;
   photoFilter?: PhotoFilter;
+  photoPosition?: PhotoPosition;
+  onPhotoPositionChange?: (position: PhotoPosition) => void;
 }) {
   const spec = CARD_FORMATS.find((f) => f.id === format) ?? CARD_FORMATS[1];
   const leadingEraId = result.eraProfile[0]?.era_id ?? dominantEra;
@@ -96,6 +131,8 @@ export default function CassetteCard({
           art={art}
           photoUrl={photoUrl}
           photoFilter={photoFilter}
+          photoPosition={photoPosition}
+          onPhotoPositionChange={onPhotoPositionChange}
           leadingEraLabel={leadingEraLabel}
           credit={credit}
         />
@@ -106,6 +143,8 @@ export default function CassetteCard({
           art={art}
           photoUrl={photoUrl}
           photoFilter={photoFilter}
+          photoPosition={photoPosition}
+          onPhotoPositionChange={onPhotoPositionChange}
           leadingEraId={leadingEraId}
           leadingEraLabel={leadingEraLabel}
           credit={credit}
@@ -118,6 +157,8 @@ export default function CassetteCard({
           quote={quote}
           photoUrl={photoUrl}
           photoFilter={photoFilter}
+          photoPosition={photoPosition}
+          onPhotoPositionChange={onPhotoPositionChange}
           leadingEraId={leadingEraId}
           leadingEraLabel={leadingEraLabel}
           credit={credit}
@@ -130,6 +171,8 @@ export default function CassetteCard({
           quote={quote}
           photoUrl={photoUrl}
           photoFilter={photoFilter}
+          photoPosition={photoPosition}
+          onPhotoPositionChange={onPhotoPositionChange}
           leadingEraLabel={leadingEraLabel}
           credit={credit}
         />
@@ -145,6 +188,8 @@ function FeedBody({
   art,
   photoUrl,
   photoFilter,
+  photoPosition,
+  onPhotoPositionChange,
   leadingEraLabel,
   credit,
 }: {
@@ -152,6 +197,8 @@ function FeedBody({
   art: EraArt | null;
   photoUrl?: string | null;
   photoFilter: PhotoFilter;
+  photoPosition: PhotoPosition;
+  onPhotoPositionChange?: (position: PhotoPosition) => void;
   leadingEraLabel?: string;
   credit: string | null;
 }) {
@@ -174,7 +221,14 @@ function FeedBody({
         <CardFooter result={result} className="mt-auto" />
       </div>
       {photoUrl ? (
-        <UserPhoto src={photoUrl} filter={photoFilter} badge={leadingEraLabel} className="min-h-0 w-[220px] shrink-0" />
+        <UserPhoto
+          src={photoUrl}
+          filter={photoFilter}
+          position={photoPosition}
+          onPositionChange={onPhotoPositionChange}
+          badge={leadingEraLabel}
+          className="min-h-0 w-[220px] shrink-0"
+        />
       ) : art ? (
         <div className="flex w-[220px] shrink-0 flex-col">
           <EraImage art={art} badge={leadingEraLabel} creditOverlay={credit} className="min-h-0 flex-1" />
@@ -189,6 +243,8 @@ function SquareBody({
   art,
   photoUrl,
   photoFilter,
+  photoPosition,
+  onPhotoPositionChange,
   leadingEraId,
   leadingEraLabel,
   credit,
@@ -197,6 +253,8 @@ function SquareBody({
   art: EraArt | null;
   photoUrl?: string | null;
   photoFilter: PhotoFilter;
+  photoPosition: PhotoPosition;
+  onPhotoPositionChange?: (position: PhotoPosition) => void;
   leadingEraId?: string;
   leadingEraLabel?: string;
   credit: string | null;
@@ -204,7 +262,15 @@ function SquareBody({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 p-3.5">
       <CardHeader />
-      <ImageBlock art={art} photoUrl={photoUrl} photoFilter={photoFilter} leadingEraLabel={leadingEraLabel} credit={credit} />
+      <ImageBlock
+        art={art}
+        photoUrl={photoUrl}
+        photoFilter={photoFilter}
+        photoPosition={photoPosition}
+        onPhotoPositionChange={onPhotoPositionChange}
+        leadingEraLabel={leadingEraLabel}
+        credit={credit}
+      />
       <ScoreRow result={result} eraId={leadingEraId} />
       <EraBarsPanel result={result} />
       <CardFooter result={result} />
@@ -218,6 +284,8 @@ function PortraitBody({
   quote,
   photoUrl,
   photoFilter,
+  photoPosition,
+  onPhotoPositionChange,
   leadingEraId,
   leadingEraLabel,
   credit,
@@ -227,6 +295,8 @@ function PortraitBody({
   quote: EraQuote | null;
   photoUrl?: string | null;
   photoFilter: PhotoFilter;
+  photoPosition: PhotoPosition;
+  onPhotoPositionChange?: (position: PhotoPosition) => void;
   leadingEraId?: string;
   leadingEraLabel?: string;
   credit: string | null;
@@ -234,7 +304,15 @@ function PortraitBody({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 p-4">
       <CardHeader />
-      <ImageBlock art={art} photoUrl={photoUrl} photoFilter={photoFilter} leadingEraLabel={leadingEraLabel} credit={credit} />
+      <ImageBlock
+        art={art}
+        photoUrl={photoUrl}
+        photoFilter={photoFilter}
+        photoPosition={photoPosition}
+        onPhotoPositionChange={onPhotoPositionChange}
+        leadingEraLabel={leadingEraLabel}
+        credit={credit}
+      />
       {quote && <QuoteBlock quote={quote} compact />}
       <ScoreRow result={result} eraId={leadingEraId} />
       <EraBarsPanel result={result} />
@@ -249,6 +327,8 @@ function StoryBody({
   quote,
   photoUrl,
   photoFilter,
+  photoPosition,
+  onPhotoPositionChange,
   leadingEraLabel,
   credit,
 }: {
@@ -257,6 +337,8 @@ function StoryBody({
   quote: EraQuote | null;
   photoUrl?: string | null;
   photoFilter: PhotoFilter;
+  photoPosition: PhotoPosition;
+  onPhotoPositionChange?: (position: PhotoPosition) => void;
   leadingEraLabel?: string;
   credit: string | null;
 }) {
@@ -281,7 +363,15 @@ function StoryBody({
         <p className="mx-auto max-w-[430px] text-xs leading-[1.5] text-ink-soft">{result.label.sub_bn}</p>
       </div>
 
-      <ImageBlock art={art} photoUrl={photoUrl} photoFilter={photoFilter} leadingEraLabel={leadingEraLabel} credit={credit} />
+      <ImageBlock
+        art={art}
+        photoUrl={photoUrl}
+        photoFilter={photoFilter}
+        photoPosition={photoPosition}
+        onPhotoPositionChange={onPhotoPositionChange}
+        leadingEraLabel={leadingEraLabel}
+        credit={credit}
+      />
 
       {quote && <QuoteBlock quote={quote} />}
       <EraBarsPanel result={result} />
@@ -322,17 +412,30 @@ function ImageBlock({
   art,
   photoUrl,
   photoFilter,
+  photoPosition,
+  onPhotoPositionChange,
   leadingEraLabel,
   credit,
 }: {
   art: EraArt | null;
   photoUrl?: string | null;
   photoFilter: PhotoFilter;
+  photoPosition: PhotoPosition;
+  onPhotoPositionChange?: (position: PhotoPosition) => void;
   leadingEraLabel?: string;
   credit: string | null;
 }) {
   if (photoUrl) {
-    return <UserPhoto src={photoUrl} filter={photoFilter} badge={leadingEraLabel} className="min-h-0 flex-1" />;
+    return (
+      <UserPhoto
+        src={photoUrl}
+        filter={photoFilter}
+        position={photoPosition}
+        onPositionChange={onPhotoPositionChange}
+        badge={leadingEraLabel}
+        className="min-h-0 flex-1"
+      />
+    );
   }
   if (!art) return null;
   return (
@@ -345,49 +448,144 @@ function ImageBlock({
   );
 }
 
-/** Personal photo frame with a retro film filter and era badge. */
+/**
+ * Personal photo in an old-print frame (when a retro filter is on) with the
+ * film filter on top. Draggable to reposition the visible crop; the position
+ * can also be set via a 3×3 grid in the result page.
+ */
 function UserPhoto({
   src,
   filter,
   badge,
+  position,
+  onPositionChange,
   className = "",
 }: {
   src: string;
   filter: PhotoFilter;
   badge?: string;
+  position: PhotoPosition;
+  onPositionChange?: (position: PhotoPosition) => void;
   className?: string;
 }) {
+  const imgRef = useRef<HTMLImageElement>(null);
+  const dragRef = useRef<{ pointerX: number; pointerY: number; x: number; y: number } | null>(null);
+  const frame = filter === "80s" || filter === "90s" ? PHOTO_FRAME[filter] : null;
+
+  const endDrag = () => {
+    dragRef.current = null;
+  };
+
+  const handlePointerDown = (event: React.PointerEvent<HTMLImageElement>) => {
+    if (!onPositionChange) return;
+    const img = imgRef.current;
+    if (!img || !img.naturalWidth) return;
+    event.preventDefault();
+    img.setPointerCapture(event.pointerId);
+    dragRef.current = { pointerX: event.clientX, pointerY: event.clientY, x: position.x, y: position.y };
+  };
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLImageElement>) => {
+    const drag = dragRef.current;
+    const img = imgRef.current;
+    const inner = img?.parentElement;
+    if (!drag || !img || !inner || !onPositionChange || !img.naturalWidth) return;
+    // The preview is CSS-scaled; offsetWidth keeps the unscaled layout size.
+    const scale = img.getBoundingClientRect().width / Math.max(1, img.offsetWidth);
+    const innerW = inner.offsetWidth;
+    const innerH = inner.offsetHeight;
+    const cover = Math.max(innerW / img.naturalWidth, innerH / img.naturalHeight);
+    const overflowX = Math.max(0, img.naturalWidth * cover - innerW);
+    const overflowY = Math.max(0, img.naturalHeight * cover - innerH);
+    let { x, y } = drag;
+    if (overflowX > 0) x = drag.x - ((event.clientX - drag.pointerX) / scale / overflowX) * 100;
+    if (overflowY > 0) y = drag.y - ((event.clientY - drag.pointerY) / scale / overflowY) * 100;
+    onPositionChange({
+      x: Math.min(100, Math.max(0, x)),
+      y: Math.min(100, Math.max(0, y)),
+    });
+  };
+
   return (
-    <div className={`relative overflow-hidden rounded-xl border-[3px] border-ink bg-brand-deep ${className}`}>
-      {/* eslint-disable-next-line @next/next/no-img-element -- user-supplied data URL, not an optimized asset */}
-      <img
-        src={src}
-        alt="নিজের ছবি"
-        className="absolute inset-0 h-full w-full object-cover"
-        style={filter === "none" ? undefined : { filter: PHOTO_FILTER_CSS[filter] }}
-      />
-      {filter !== "none" && <RetroOverlay kind={filter} />}
-      {badge && (
-        <span className="absolute left-1.5 top-1.5 rounded-full border border-paper/60 bg-ink/80 px-2 py-0.5 text-[10px] font-bold text-paper">
-          {badge}
-        </span>
+    <div
+      className={`relative ${frame ? "" : "overflow-hidden rounded-xl border-[3px] border-ink bg-brand-deep"} ${className}`}
+      style={
+        frame
+          ? {
+              padding: frame.padding,
+              borderRadius: frame.radius,
+              background: frame.background,
+              boxShadow: "0 2px 6px rgba(60,40,20,0.35), inset 0 0 0 1px rgba(120,95,55,0.28)",
+            }
+          : undefined
+      }
+    >
+      {frame && (
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-0"
+          style={{ borderRadius: "inherit", background: FRAME_STAINS }}
+        />
       )}
+      <div
+        className="relative h-full w-full overflow-hidden"
+        style={frame ? { borderRadius: "6px 9px 7px 8px / 8px 6px 8px 7px" } : undefined}
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element -- user-supplied data URL, not an optimized asset */}
+        <img
+          ref={imgRef}
+          src={src}
+          alt="নিজের ছবি"
+          draggable={false}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          className={`absolute inset-0 h-full w-full object-cover select-none ${
+            onPositionChange ? "cursor-grab touch-none active:cursor-grabbing" : ""
+          }`}
+          style={{
+            objectPosition: `${position.x}% ${position.y}%`,
+            ...(filter === "none" ? {} : { filter: PHOTO_FILTER_CSS[filter] }),
+          }}
+        />
+        {filter !== "none" && <RetroOverlay kind={filter} />}
+        {badge && (
+          <span className="absolute left-1.5 top-1.5 rounded-full border border-paper/60 bg-ink/80 px-2 py-0.5 text-[10px] font-bold text-paper">
+            {badge}
+          </span>
+        )}
+        {frame && (
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute bottom-1 right-2 font-mono text-[11px] font-bold tracking-wide"
+            style={{
+              color: "rgba(255,145,40,0.88)",
+              textShadow: "0 0 5px rgba(255,120,30,0.6)",
+              transform: "rotate(-1.2deg)",
+            }}
+          >
+            {frame.date}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
 
-/** Period texture over the photo: warm glow + vignette (80s) or VHS scanlines + cool vignette (90s). */
+/** Period texture over the photo: warm glow + heavy vignette (80s) or VHS scanlines + cool vignette (90s). */
 function RetroOverlay({ kind }: { kind: "80s" | "90s" }) {
   const background =
     kind === "80s"
       ? [
-          "radial-gradient(circle at 50% 40%, rgba(255,205,130,0.16), rgba(255,205,130,0) 62%)",
-          "radial-gradient(circle, rgba(0,0,0,0) 58%, rgba(88,52,18,0.32) 100%)",
+          "radial-gradient(circle at 50% 40%, rgba(255,205,130,0.22), rgba(255,205,130,0) 62%)",
+          "radial-gradient(circle, rgba(0,0,0,0) 52%, rgba(88,52,18,0.45) 100%)",
+          "linear-gradient(160deg, rgba(255,180,90,0.10), rgba(0,0,0,0) 45%)",
         ].join(", ")
       : [
-          "repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0 1px, rgba(0,0,0,0) 1px 3px)",
-          "linear-gradient(120deg, rgba(255,80,180,0.06), rgba(80,220,255,0.06))",
-          "radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(20,40,90,0.28) 100%)",
+          "repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0 1px, rgba(0,0,0,0) 1px 3px)",
+          "linear-gradient(120deg, rgba(255,80,180,0.09), rgba(80,220,255,0.09))",
+          "radial-gradient(circle, rgba(0,0,0,0) 54%, rgba(20,40,90,0.40) 100%)",
         ].join(", ");
   return <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background }} />;
 }
