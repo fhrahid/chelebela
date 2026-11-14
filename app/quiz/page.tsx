@@ -17,7 +17,7 @@ import AlponaFlower from "@/components/AlponaFlower";
 import CassetteArtwork from "@/components/CassetteArtwork";
 import CategorySelect from "@/components/CategorySelect";
 import { CONTENT_REVIEW_NOTE, DEFAULT_DATASET, TOTAL_ITEMS } from "@/lib/data";
-import { ALL_QUESTIONS_COUNT, answeredTooFast, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, getEraSet, sampleQuiz, setPool } from "@/lib/quiz";
+import { ALL_QUESTIONS_COUNT, answeredTooFast, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, getEraSet, resumeQuestionIndex, sampleQuiz, setPool } from "@/lib/quiz";
 import { quizStorage } from "@/lib/storage";
 import { computeResult } from "@/lib/scoring";
 import { randomEraArt } from "@/lib/era-art";
@@ -26,8 +26,10 @@ import { syncQuizSession } from "@/lib/session-sync";
 import { trackMetric } from "@/lib/metrics-client";
 import { toBn, toBnFraction } from "@/lib/bn";
 import type { MemoryItem, ResponseValue, Responses } from "@/lib/types";
+import type { StoredQuizProgress } from "@/lib/storage";
 
-type Phase = "select" | "quiz";
+type Phase = "checking" | "select" | "resume" | "quiz";
+type QuizLaunch = { setId: string; count: number; categoryId: string | null };
 
 export default function QuizPage() {
   return (
@@ -41,9 +43,12 @@ function QuizFlow() {
   const router = useRouter();
   const search = useSearchParams();
 
-  const [phase, setPhase] = useState<Phase>("select");
+  const [phase, setPhase] = useState<Phase>("checking");
   const [setId, setSetId] = useState<string | null>(null);
   const [categoryId, setCategoryId] = useState<string | null>(null);
+  const [quizSessionId, setQuizSessionId] = useState<string | null>(null);
+  const [resumeProgress, setResumeProgress] = useState<StoredQuizProgress | null>(null);
+  const [pendingLaunch, setPendingLaunch] = useState<QuizLaunch | null>(null);
   const [quizItems, setQuizItems] = useState<MemoryItem[]>([]);
   const [responses, setResponses] = useState<Responses>({});
   const [index, setIndex] = useState(0);
@@ -61,7 +66,20 @@ function QuizFlow() {
     const seen = [...new Set(Object.values(quizStorage.loadSeenIds()).flat())];
     const { items } = sampleQuiz(id, DEFAULT_DATASET.items, count, undefined, seen, selectedCategoryId);
     if (items.length === 0) return;
-    quizStartedAtRef.current = Date.now();
+    const sessionId = quizStorage.createQuizSessionId();
+    const startedAt = Date.now();
+    quizStartedAtRef.current = startedAt;
+    quizStorage.clearQuizProgress();
+    quizStorage.saveQuizProgress({
+      sessionId,
+      setId: id as StoredQuizProgress["setId"],
+      ...(selectedCategoryId ? { categoryId: selectedCategoryId } : {}),
+      itemIds: items.map((item) => item.item_id),
+      responses: {},
+      index: 0,
+      questionCount: count,
+      startedAt,
+    });
     trackMetric({
       name: "quiz_started",
       era: id,
@@ -70,6 +88,7 @@ function QuizFlow() {
     });
     setSetId(id);
     setCategoryId(selectedCategoryId);
+    setQuizSessionId(sessionId);
     setQuizItems(items);
     setResponses({});
     setIndex(0);
@@ -84,25 +103,42 @@ function QuizFlow() {
     window.scrollTo({ top: 0 });
   }, []);
 
-  // Honor set/count deep links, but never restore an old session. Each entry
-  // creates a new random sample.
+  // Keep the exact sampled order and responses if the browser closes mid-quiz.
   useEffect(() => {
     quizStorage.clearProgress();
     const requestedCategory = search.get("category");
     const selectedCategory = DEFAULT_DATASET.categories.find(
       (category) => category.category_id === requestedCategory,
     );
-    if (selectedCategory) setCategoryId(selectedCategory.category_id);
-
     const deepLink = getEraSet(search.get("set"));
-    if (deepLink) {
-      const countParam = Number(search.get("count"));
-      const count = countParam === ALL_QUESTIONS_COUNT || (Number.isInteger(countParam) && countParam >= 1 && countParam <= TOTAL_ITEMS)
-        ? countParam
-        : DEFAULT_QUIZ_LENGTH;
-      startSet(deepLink.id, count, selectedCategory?.category_id ?? null);
+    const countParam = Number(search.get("count"));
+    const count = countParam === ALL_QUESTIONS_COUNT || (Number.isInteger(countParam) && countParam >= 1 && countParam <= TOTAL_ITEMS)
+      ? countParam
+      : DEFAULT_QUIZ_LENGTH;
+    const launch = deepLink
+      ? { setId: deepLink.id, count, categoryId: selectedCategory?.category_id ?? null }
+      : null;
+    const saved = quizStorage.loadQuizProgress();
+    const savedItemsAreCurrent = saved?.itemIds.every((id) =>
+      DEFAULT_DATASET.items.some((item) => item.item_id === id)
+    );
+
+    if (saved && savedItemsAreCurrent) {
+      setCategoryId(saved.categoryId ?? selectedCategory?.category_id ?? null);
+      setResumeProgress(saved);
+      setPendingLaunch(launch);
+      setPhase("resume");
+      return;
     }
-    // Deliberately run once on entry.
+    if (saved) quizStorage.clearQuizProgress();
+
+    if (selectedCategory) setCategoryId(selectedCategory.category_id);
+    if (deepLink) {
+      startSet(deepLink.id, count, selectedCategory?.category_id ?? null);
+    } else {
+      setPhase("select");
+    }
+    // Deliberately inspect browser storage once on entry.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -112,14 +148,96 @@ function QuizFlow() {
   const total = quizItems.length;
   const current = quizItems[index];
 
+  const finishQuiz = useCallback(async (
+    finalResponses: Responses,
+    items: MemoryItem[],
+    finalSetId: string,
+    finalCategoryId: string | null,
+    sessionId: string,
+  ) => {
+    const askedIds = items.map((item) => item.item_id);
+    const finalResult = computeResult(finalResponses, DEFAULT_DATASET, { askedItemIds: askedIds });
+    const leadingEra = finalResult.eraProfile[0]?.era_id ?? getEraSet(finalSetId)?.era;
+    const art = randomEraArt(leadingEra);
+    const quote = randomEraQuote(leadingEra);
+    const saved = quizStorage.saveResult(
+      finalResponses,
+      askedIds,
+      finalSetId,
+      art?.art_id,
+      quote?.quote_id,
+      finalCategoryId ?? undefined,
+      sessionId,
+    );
+    quizStorage.addSeenIds(finalSetId, Object.keys(finalResponses));
+    // Already-synced sessions (e.g. finishing again after a power cut during
+    // the first attempt) skip the extra request; the server insert is
+    // idempotent anyway, so a retry is harmless when needed.
+    if (!saved.serverSessionId) await syncQuizSession(saved);
+    quizStorage.clearQuizProgress();
+    router.push("/result");
+  }, [router]);
+
+  const resumeQuiz = useCallback((progress: StoredQuizProgress) => {
+    const itemsById = new Map(DEFAULT_DATASET.items.map((item) => [item.item_id, item]));
+    const items = progress.itemIds.map((id) => itemsById.get(id));
+    if (items.some((item) => !item)) {
+      quizStorage.clearQuizProgress();
+      setResumeProgress(null);
+      setPhase("select");
+      return;
+    }
+    const restoredItems = items as MemoryItem[];
+    const nextIndex = resumeQuestionIndex(progress.itemIds, progress.responses, progress.index);
+    const allAnswered = restoredItems.every((item) => progress.responses[item.item_id] !== undefined);
+
+    setSetId(progress.setId);
+    setCategoryId(progress.categoryId ?? null);
+    setQuizSessionId(progress.sessionId);
+    setQuizItems(restoredItems);
+    setResponses(progress.responses);
+    setIndex(nextIndex);
+    setQuestionCount(progress.questionCount);
+    quizStartedAtRef.current = progress.startedAt;
+    setResumeProgress(null);
+    setPhase("quiz");
+    submittingRef.current = allAnswered;
+    answerLockRef.current = false;
+    answerTimesRef.current = [];
+    setSpeedCheck(false);
+    setTransitioning(false);
+    window.scrollTo({ top: 0 });
+
+    if (allAnswered) {
+      void finishQuiz(
+        progress.responses,
+        restoredItems,
+        progress.setId,
+        progress.categoryId ?? null,
+        progress.sessionId,
+      );
+    }
+  }, [finishQuiz]);
+
   const answer = useCallback(
     (value: ResponseValue) => {
-      if (!current || !setId || submittingRef.current || answerLockRef.current) return;
+      if (!current || !setId || !quizSessionId || submittingRef.current || answerLockRef.current) return;
       answerLockRef.current = true;
       setTransitioning(true);
       const isFirstAnswerForItem = responses[current.item_id] === undefined;
       const nextResponses = { ...responses, [current.item_id]: value };
+      const nextIndex = Math.min(total - 1, index + 1);
       setResponses(nextResponses);
+      quizStorage.saveQuizProgress({
+        sessionId: quizSessionId,
+        setId: setId as StoredQuizProgress["setId"],
+        ...(categoryId ? { categoryId } : {}),
+        itemIds: quizItems.map((item) => item.item_id),
+        responses: nextResponses,
+        index: nextIndex,
+        questionCount,
+        startedAt: quizStartedAtRef.current ?? Date.now(),
+      });
       quizStorage.addSeenIds(setId, [current.item_id]);
       setPop(true);
       setTimeout(() => setPop(false), 260);
@@ -127,27 +245,10 @@ function QuizFlow() {
       const allAnswered = quizItems.every((item) => nextResponses[item.item_id] !== undefined);
       if (allAnswered) {
         submittingRef.current = true;
-        // Save the exact latest map; don't depend on React's async state flush.
+        // Save the exact latest map before async persistence; a power loss here
+        // can resume and finish idempotently with the same session ID.
         setTimeout(() => {
-          void (async () => {
-            const askedIds = quizItems.map((item) => item.item_id);
-            const finalResult = computeResult(nextResponses, DEFAULT_DATASET, { askedItemIds: askedIds });
-            const leadingEra = finalResult.eraProfile[0]?.era_id ?? getEraSet(setId)?.era;
-            const art = randomEraArt(leadingEra);
-            const quote = randomEraQuote(leadingEra);
-            const saved = quizStorage.saveResult(
-              nextResponses,
-              askedIds,
-              setId,
-              art?.art_id,
-              quote?.quote_id,
-              categoryId ?? undefined,
-            );
-            quizStorage.addSeenIds(setId, Object.keys(nextResponses));
-            quizStorage.clearProgress();
-            await syncQuizSession(saved);
-            router.push("/result");
-          })();
+          void finishQuiz(nextResponses, quizItems, setId, categoryId, quizSessionId);
         }, 320);
       } else {
         let promptToSlowDown = false;
@@ -166,14 +267,79 @@ function QuizFlow() {
         }
 
         setTimeout(() => {
-          setIndex((i) => Math.min(total - 1, i + 1));
+          setIndex(nextIndex);
           answerLockRef.current = false;
           setTransitioning(false);
         }, 260);
       }
     },
-    [current, responses, setId, categoryId, quizItems, total, router]
+    [current, responses, setId, categoryId, quizItems, total, index, questionCount, quizSessionId, finishQuiz]
   );
+
+  if (phase === "checking") {
+    return <p className="py-24 text-center text-ink-soft">অসমাপ্ত কুইজ খোঁজা হচ্ছে…</p>;
+  }
+
+  if (phase === "resume" && resumeProgress) {
+    const savedSet = getEraSet(resumeProgress.setId);
+    const savedCategory = DEFAULT_DATASET.categories.find(
+      (item) => item.category_id === resumeProgress.categoryId,
+    );
+    const savedAnswers = Object.keys(resumeProgress.responses).length;
+    const remaining = Math.max(0, resumeProgress.itemIds.length - savedAnswers);
+    return (
+      <div className="mx-auto max-w-md px-4 py-12">
+        <section className="rounded-2xl border-2 border-ink bg-paper-card p-6 text-center shadow-hard">
+          <AlponaFlower size={36} petal="#B15853" center="#F9BB29" />
+          <h1 className="mt-2 font-display text-2xl font-extrabold">একটা অসমাপ্ত কুইজ পাওয়া গেছে</h1>
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            তোমার উত্তর এই ডিভাইসে স্বয়ংক্রিয়ভাবে সেভ ছিল। চাইলে সেখান থেকেই চালিয়ে যেতে পারো।
+          </p>
+          <p className="mt-4 rounded-xl border border-ink/30 bg-paper-soft p-3 text-sm font-semibold">
+            {savedSet?.label_bn ?? "মিক্স টেপ"} ক্যাসেট
+            {savedCategory ? ` · ${savedCategory.name_bn}` : ""}
+            <br />
+            {toBn(savedAnswers)}টি উত্তর সেভ · {toBn(remaining)}টি বাকি
+          </p>
+          <div className="mt-4 grid gap-2">
+            <button
+              type="button"
+              onClick={() => resumeQuiz(resumeProgress)}
+              className="min-h-12 rounded-xl border-2 border-ink bg-brand px-5 py-3 font-display font-bold text-paper shadow-hard-sm"
+            >
+              {remaining === 0 ? "ফলাফল তৈরি করো" : "যেখান থেকে থেমেছিলে, সেখান থেকে চালাও"}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                if (savedAnswers > 0) {
+                  trackMetric({
+                    name: "quiz_abandoned",
+                    era: resumeProgress.setId,
+                    ...(resumeProgress.categoryId ? { categoryId: resumeProgress.categoryId } : {}),
+                    answeredCount: savedAnswers,
+                    durationSeconds: Math.max(0, Math.round((Date.now() - resumeProgress.startedAt) / 1000)),
+                  });
+                }
+                quizStorage.clearQuizProgress();
+                setResumeProgress(null);
+                setQuizSessionId(null);
+                if (pendingLaunch) {
+                  startSet(pendingLaunch.setId, pendingLaunch.count, pendingLaunch.categoryId);
+                  setPendingLaunch(null);
+                } else {
+                  setPhase("select");
+                }
+              }}
+              className="min-h-11 rounded-xl border-2 border-ink bg-paper-card px-5 py-2 font-bold"
+            >
+              {pendingLaunch ? "এটা বাদ দিয়ে বাছাই করা কুইজ শুরু করো" : "এটা বাদ দিয়ে নতুন কুইজ বেছে নাও"}
+            </button>
+          </div>
+        </section>
+      </div>
+    );
+  }
 
   if (phase === "select") {
     return (
@@ -194,7 +360,15 @@ function QuizFlow() {
         <div className="flex items-center justify-between gap-2">
           <button
             type="button"
-            onClick={() => (answered > 0 ? setConfirmExit(true) : setPhase("select"))}
+            onClick={() => {
+              if (answered > 0) {
+                setConfirmExit(true);
+              } else {
+                quizStorage.clearQuizProgress();
+                setQuizSessionId(null);
+                setPhase("select");
+              }
+            }}
             disabled={transitioning}
             aria-label="ক্যাসেট বদলাও"
             className="flex h-9 w-9 items-center justify-center rounded-lg border-2 border-ink bg-paper-card disabled:opacity-50"
@@ -244,7 +418,22 @@ function QuizFlow() {
       <div className="mt-5 flex items-center justify-between">
         <button
           type="button"
-          onClick={() => setIndex((i) => Math.max(0, i - 1))}
+          onClick={() => {
+            const nextIndex = Math.max(0, index - 1);
+            setIndex(nextIndex);
+            if (setId && quizSessionId) {
+              quizStorage.saveQuizProgress({
+                sessionId: quizSessionId,
+                setId: setId as StoredQuizProgress["setId"],
+                ...(categoryId ? { categoryId } : {}),
+                itemIds: quizItems.map((item) => item.item_id),
+                responses,
+                index: nextIndex,
+                questionCount,
+                startedAt: quizStartedAtRef.current ?? Date.now(),
+              });
+            }
+          }}
           disabled={index === 0 || transitioning}
           className="flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-ink bg-paper-card px-4 py-2 text-sm font-bold shadow-hard-sm disabled:opacity-40"
         >
@@ -289,7 +478,7 @@ function QuizFlow() {
                         : 0,
                     });
                   }
-                  quizStorage.clearProgress();
+                  quizStorage.clearQuizProgress();
                   setConfirmExit(false);
                   setPhase("select");
                   setResponses({});

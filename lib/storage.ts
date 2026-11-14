@@ -24,6 +24,28 @@ const resultSchema = z.object({
 
 const seenSchema = z.record(z.array(itemId));
 const resultHistorySchema = z.array(resultSchema);
+const quizProgressSchema = z.object({
+  sessionId: z.string().regex(/^[A-Za-z0-9_-]{22}$/),
+  setId: z.enum(["80s", "90s", "2000s", "mix"]),
+  categoryId: z.string().min(1).optional(),
+  itemIds: z.array(itemId).min(1).max(250),
+  responses: z.record(responseValue),
+  index: z.number().int().min(0).max(249),
+  questionCount: z.union([z.literal(-1), z.number().int().min(1).max(250)]),
+  startedAt: z.number().positive(),
+  updatedAt: z.number().positive(),
+}).strict().superRefine((progress, ctx) => {
+  if (new Set(progress.itemIds).size !== progress.itemIds.length) {
+    ctx.addIssue({ code: "custom", message: "itemIds must be unique", path: ["itemIds"] });
+  }
+  if (progress.index >= progress.itemIds.length) {
+    ctx.addIssue({ code: "custom", message: "index is outside the quiz", path: ["index"] });
+  }
+  const asked = new Set(progress.itemIds);
+  if (Object.keys(progress.responses).some((id) => !asked.has(id))) {
+    ctx.addIssue({ code: "custom", message: "responses must be from this quiz", path: ["responses"] });
+  }
+});
 const pendingCompareSchema = z.object({
   comparisonId: z.string().min(1).max(4096),
   savedAt: z.number(),
@@ -35,6 +57,7 @@ const legacyPendingCompareSchema = z.object({
 
 const KEYS = {
   progress: "chhelebela:progress:v1", // old key, cleared for backwards compatibility
+  quizProgress: "chhelebela:incomplete-quiz:v1",
   result: "chhelebela:result:v1",
   resultHistory: "chhelebela:results:v1",
   pendingCompare: "chhelebela:pending-compare:v1",
@@ -99,10 +122,42 @@ export interface StoredPendingCompare {
   savedAt: number;
 }
 
+export interface StoredQuizProgress {
+  sessionId: string;
+  setId: "80s" | "90s" | "2000s" | "mix";
+  categoryId?: string;
+  itemIds: string[];
+  responses: Responses;
+  index: number;
+  questionCount: number;
+  startedAt: number;
+  updatedAt: number;
+}
+
 export const quizStorage = {
   /** Legacy v2 progress is no longer used — purged on quiz entry. */
   clearProgress(): void {
     safeRemove(KEYS.progress);
+  },
+  createQuizSessionId(): string {
+    return createSessionId();
+  },
+  loadQuizProgress(): StoredQuizProgress | null {
+    const raw = safeGet(KEYS.quizProgress);
+    if (!raw) return null;
+    try {
+      const parsed = quizProgressSchema.safeParse(JSON.parse(raw));
+      return parsed.success ? parsed.data : null;
+    } catch {
+      return null;
+    }
+  },
+  saveQuizProgress(progress: Omit<StoredQuizProgress, "updatedAt">): void {
+    const parsed = quizProgressSchema.safeParse({ ...progress, updatedAt: Date.now() });
+    if (parsed.success) safeSet(KEYS.quizProgress, JSON.stringify(parsed.data));
+  },
+  clearQuizProgress(): void {
+    safeRemove(KEYS.quizProgress);
   },
 
   loadResult(): StoredResult | null {
@@ -166,11 +221,24 @@ export const quizStorage = {
     eraArtId?: string,
     eraQuoteId?: string,
     categoryId?: string,
+    sessionId?: string,
   ): StoredResult {
     const previous = this.loadResultHistory();
+    const existing = sessionId
+      ? previous.find((saved) => saved.sessionId === sessionId)
+      : undefined;
+    if (existing &&
+      JSON.stringify(existing.responses) === JSON.stringify(responses) &&
+      JSON.stringify(existing.askedIds) === JSON.stringify(askedIds) &&
+      existing.setId === setId &&
+      existing.categoryId === categoryId) {
+      safeSet(KEYS.result, JSON.stringify(existing));
+      return existing;
+    }
+    const resultSessionId = existing ? createSessionId() : sessionId ?? createSessionId();
     const result: StoredResult = {
       responses,
-      sessionId: createSessionId(),
+      sessionId: resultSessionId,
       askedIds,
       setId,
       ...(categoryId ? { categoryId } : {}),

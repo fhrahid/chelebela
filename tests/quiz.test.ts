@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ALL_QUESTIONS_COUNT, answeredTooFast, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, getEraSet, mulberry32, sampleQuiz, setPool } from "../lib/quiz";
+import { ALL_QUESTIONS_COUNT, answeredTooFast, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, getEraSet, mulberry32, resumeQuestionIndex, sampleQuiz, setPool } from "../lib/quiz";
 import { DEFAULT_DATASET, ITEMS } from "../lib/data";
 
 describe("era sets", () => {
@@ -35,6 +35,17 @@ describe("era sets", () => {
 });
 
 describe("random sampling", () => {
+  it("resumes at the saved unanswered question, or the next unanswered item", () => {
+    const ids = ["MEM_001", "MEM_002", "MEM_003"];
+    expect(resumeQuestionIndex(ids, { MEM_001: "experienced" }, 0)).toBe(1);
+    expect(resumeQuestionIndex(ids, { MEM_001: "experienced" }, 2)).toBe(2);
+    expect(resumeQuestionIndex(ids, {
+      MEM_001: "experienced",
+      MEM_002: "not_experienced",
+      MEM_003: "not_applicable",
+    }, 1)).toBe(2);
+  });
+
   it("detects five-question answer bursts without flagging a considered pace", () => {
     expect(answeredTooFast([0, 410, 830, 1220, 1700])).toBe(true);
     expect(answeredTooFast([0, 900, 1800, 2700, 3600])).toBe(false);

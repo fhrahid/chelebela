@@ -11,7 +11,7 @@
  * the sampled (shuffled) order, while the comparison codec always encodes in
  * global item_id order, so sampling never affects link compatibility.
  */
-import type { MemoryItem } from "./types";
+import type { MemoryItem, Responses } from "./types";
 
 export const DEFAULT_QUIZ_LENGTH = 10;
 export const ALL_QUESTIONS_COUNT = -1;
@@ -53,6 +53,19 @@ export function setPool(setId: string, items: MemoryItem[], categoryId?: string 
     (!set.era || item.era_tags.includes(set.era)) &&
     (!categoryId || item.category_id === categoryId)
   );
+}
+
+/** Resume on the saved question unless it is already answered; then find the next unanswered one. */
+export function resumeQuestionIndex(itemIds: string[], responses: Responses, preferredIndex: number): number {
+  if (itemIds.length === 0) return 0;
+  const start = Math.max(0, Math.min(itemIds.length - 1, Math.floor(preferredIndex)));
+  for (let index = start; index < itemIds.length; index++) {
+    if (responses[itemIds[index]] === undefined) return index;
+  }
+  for (let index = 0; index < start; index++) {
+    if (responses[itemIds[index]] === undefined) return index;
+  }
+  return itemIds.length - 1;
 }
 
 /** Deterministic PRNG (mulberry32) so sessions can be replayed in tests. */

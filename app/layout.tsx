@@ -15,6 +15,7 @@ import "./globals.css";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
 import VisitorTracker from "@/components/VisitorTracker";
+import IncompleteQuizBanner from "@/components/IncompleteQuizBanner";
 
 export const metadata: Metadata = {
   title: {
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="flex min-h-dvh flex-col font-sans antialiased">
         <VisitorTracker />
         <SiteHeader />
+        <IncompleteQuizBanner />
         <main className="relative z-10 flex-1">{children}</main>
         <Footer />
       </body>

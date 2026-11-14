@@ -58,6 +58,59 @@ describe("quiz result persistence", () => {
     expect(quizStorage.loadResultBySessionId(second.sessionId!)?.responses).toEqual(second.responses);
   });
 
+  it("auto-saves an unfinished quiz and resumes exactly where it stopped", () => {
+    const sessionId = quizStorage.createQuizSessionId();
+    quizStorage.saveQuizProgress({
+      sessionId,
+      setId: "90s",
+      categoryId: "food",
+      itemIds: ["MEM_001", "MEM_002", "MEM_003"],
+      responses: { MEM_001: "experienced" },
+      index: 1,
+      questionCount: 3,
+      startedAt: 1234,
+    });
+
+    expect(quizStorage.loadQuizProgress()).toMatchObject({
+      sessionId,
+      setId: "90s",
+      categoryId: "food",
+      itemIds: ["MEM_001", "MEM_002", "MEM_003"],
+      index: 1,
+    });
+    expect(quizStorage.loadQuizProgress()?.responses).toEqual({ MEM_001: "experienced" });
+
+    quizStorage.clearQuizProgress();
+    expect(quizStorage.loadQuizProgress()).toBeNull();
+  });
+
+  it("ignores tampered or corrupt unfinished-quiz data instead of crashing", () => {
+    mockStorage.setItem("chhelebela:incomplete-quiz:v1", "{not-json");
+    expect(quizStorage.loadQuizProgress()).toBeNull();
+
+    mockStorage.setItem("chhelebela:incomplete-quiz:v1", JSON.stringify({
+      sessionId: "too-short",
+      setId: "90s",
+      itemIds: ["MEM_001"],
+      responses: {},
+      index: 5, // outside the quiz
+      questionCount: 1,
+      startedAt: 1,
+      updatedAt: 1,
+    }));
+    expect(quizStorage.loadQuizProgress()).toBeNull();
+  });
+
+  it("finishing a restored quiz records one result, not a duplicate", () => {
+    const sessionId = quizStorage.createQuizSessionId();
+    const responses = { MEM_001: "experienced" as const };
+    const first = quizStorage.saveResult(responses, ["MEM_001"], "80s", undefined, undefined, undefined, sessionId);
+    const retried = quizStorage.saveResult(responses, ["MEM_001"], "80s", undefined, undefined, undefined, sessionId);
+
+    expect(retried.sessionId).toBe(first.sessionId);
+    expect(quizStorage.loadResultHistory().filter((result) => result.sessionId === first.sessionId)).toHaveLength(1);
+  });
+
   it("preserves a result saved by an older app version when the next quiz completes", () => {
     const oldResult = {
       responses: { MEM_010: "experienced" },
