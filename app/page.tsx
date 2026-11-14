@@ -141,12 +141,13 @@ export default function LandingPage() {
             <AlponaFlower size={30} petal="#298265" center="#F9BB29" />
             মনে আছে এগুলো? <span className="text-brass">✦</span>
           </h2>
+          <p className="mt-1 text-sm text-ink-soft">একটি বিষয় বেছে নাও; পরের পাতায় সেই বিষয়ের জন্য দশক বেছে নেবে।</p>
           <Reveal>
             <div className="mt-4 flex flex-wrap gap-2">
               {categoriesWithItems.map((c) => (
                 <Link
                   key={c.category_id}
-                  href="/quiz"
+                  href={`/quiz?category=${encodeURIComponent(c.category_id)}`}
                   className="rounded-full border-2 border-ink bg-paper-card px-4 py-1.5 text-sm font-bold shadow-hard-sm transition-transform hover:-translate-y-0.5"
                 >
                   {c.name_bn} <span className="font-normal text-ink-soft">({toBn(c.item_count)})</span>

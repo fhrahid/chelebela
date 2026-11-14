@@ -78,17 +78,19 @@ function QuizFlow() {
   // creates a new random sample.
   useEffect(() => {
     quizStorage.clearProgress();
+    const requestedCategory = search.get("category");
+    const selectedCategory = DEFAULT_DATASET.categories.find(
+      (category) => category.category_id === requestedCategory,
+    );
+    if (selectedCategory) setCategoryId(selectedCategory.category_id);
+
     const deepLink = getEraSet(search.get("set"));
     if (deepLink) {
-      const requestedCategory = search.get("category");
-      const deepLinkCategory = DEFAULT_DATASET.categories.some((category) => category.category_id === requestedCategory)
-        ? requestedCategory
-        : null;
       const countParam = Number(search.get("count"));
       const count = countParam === ALL_QUESTIONS_COUNT || (Number.isInteger(countParam) && countParam >= 1 && countParam <= TOTAL_ITEMS)
         ? countParam
         : DEFAULT_QUIZ_LENGTH;
-      startSet(deepLink.id, count, deepLinkCategory);
+      startSet(deepLink.id, count, selectedCategory?.category_id ?? null);
     }
     // Deliberately run once on entry.
     // eslint-disable-next-line react-hooks/exhaustive-deps
