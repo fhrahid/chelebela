@@ -9,13 +9,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, BarChart3, Disc3, Info, Sparkles, Users } from "lucide-react";
-import CassetteCard from "@/components/CassetteCard";
+import CassetteCard, { CARD_FORMATS, type CardFormat } from "@/components/CassetteCard";
 import AlponaFlower from "@/components/AlponaFlower";
 import EraBars from "@/components/EraBars";
 import CategoryBars from "@/components/CategoryBars";
 import ShareActions from "@/components/ShareActions";
 import Reveal from "@/components/Reveal";
-import { CONTENT_REVIEW_NOTE, DEFAULT_DATASET } from "@/lib/data";
+import { DEFAULT_DATASET } from "@/lib/data";
 import { computeResult } from "@/lib/scoring";
 import { getEraSet } from "@/lib/quiz";
 import { eraArtById, randomEraArt, type EraArt } from "@/lib/era-art";
@@ -41,6 +41,7 @@ export default function ResultPage() {
   const [displayScore, setDisplayScore] = useState(0);
   const [resultArt, setResultArt] = useState<EraArt | null>(null);
   const [resultQuote, setResultQuote] = useState<EraQuote | null>(null);
+  const [cardFormat, setCardFormat] = useState<CardFormat>("square");
 
   const showStoredResult = useCallback((stored: StoredResult) => {
     setResponses(stored.responses);
@@ -314,9 +315,6 @@ export default function ResultPage() {
                 </a>
               )}
             </figcaption>
-            <p className="mt-1 text-[10px] leading-relaxed text-ink-soft/80">
-              {resultQuote.source_note_bn}
-            </p>
           </figure>
         </Reveal>
       )}
@@ -333,7 +331,6 @@ export default function ResultPage() {
           </div>
           <p className="mt-3 text-xs leading-relaxed text-ink-soft">
             একাধিক দশকে থাকা স্মৃতির অবদান সমান ভাগে ভাগ করা হয়েছে—একটি স্মৃতি মোটে একবারই গোনা হয়।
-            {result.eraFallbackUsed ? " (দশকের তথ্য এখনো যাচাইধীন — ফলাফল আরও খুঁটিয়ে দেখা হবে।)" : ""}
           </p>
         </section>
       </Reveal>
@@ -359,17 +356,41 @@ export default function ResultPage() {
 
       {/* card preview + share */}
       <Reveal>
-        <section className="mt-8 flex flex-col items-center gap-5" aria-labelledby="share-heading">
-          <h2 id="share-heading" className="font-display text-xl font-extrabold">
+        <section className="mt-8 flex flex-col items-center gap-4" aria-labelledby="share-heading">
+          <h2 id="share-heading" className="text-center font-display text-xl font-extrabold">
             ক্যাসেট কার্ড বানিয়ে শেয়ার করো
           </h2>
-          <CassetteCard
-            result={result}
-            art={eraArt}
-            quote={resultQuote}
-            dominantEra={dominantEra}
-            dominantEraLabel={result.eraProfile[0]?.label_bn ?? set?.label_bn}
-          />
+          <div className="flex max-w-md flex-wrap justify-center gap-2" role="radiogroup" aria-label="কার্ডের মাপ বেছে নাও">
+            {CARD_FORMATS.map((formatSpec) => {
+              const active = cardFormat === formatSpec.id;
+              return (
+                <button
+                  key={formatSpec.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => setCardFormat(formatSpec.id)}
+                  className={`min-h-11 rounded-xl border-2 border-ink px-3 py-1.5 text-center transition-transform active:scale-95 ${
+                    active ? "bg-marigold shadow-hard-sm" : "bg-paper-card"
+                  }`}
+                >
+                  <span className="block text-sm font-bold leading-tight">{formatSpec.label}</span>
+                  <span className="block text-[10px] font-semibold text-ink-soft">{formatSpec.hint}</span>
+                </button>
+              );
+            })}
+          </div>
+          <ScaledCardPreview format={cardFormat}>
+            <CassetteCard
+              result={result}
+              art={eraArt}
+              quote={resultQuote}
+              dominantEra={dominantEra}
+              dominantEraLabel={result.eraProfile[0]?.label_bn ?? set?.label_bn}
+              cardId="result-card"
+              format={cardFormat}
+            />
+          </ScaledCardPreview>
           <div className="w-full max-w-md">
             <ShareActions
               result={result}
@@ -377,6 +398,7 @@ export default function ResultPage() {
               askedIds={askedIds ?? Object.keys(responses)}
               sessionId={serverSessionId}
               cardId="result-card"
+              downloadName={`chhelebela-score-${cardFormat}.png`}
             />
           </div>
         </section>
@@ -405,7 +427,6 @@ export default function ResultPage() {
             <strong>দশকের ছবি</strong> তৈরি হয় তুমি যেসব স্মৃতি পেয়েছ তার era tag থেকে; একাধিক দশকে থাকলে অবদান ভাগ হয়,
             দ্বিগুণ হয় না। জন্মসাল এই হিসাবে কোনো ভূমিকা রাখে না — পরে জন্মালেও আগের দশকের স্মৃতি পেলে সেটাই গোনা হয়।
           </p>
-          <p>{CONTENT_REVIEW_NOTE}</p>
         </div>
       </details>
 
@@ -440,5 +461,38 @@ function RotateCwIcon() {
       <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
       <path d="M21 3v5h-5" />
     </svg>
+  );
+}
+
+/**
+ * The card renders at fixed social-media pixel sizes; this wrapper scales the
+ * preview down to the available width. Capture targets the unscaled card, so
+ * downloads always keep the exact ratio resolution.
+ */
+function ScaledCardPreview({ format, children }: { format: CardFormat; children: React.ReactNode }) {
+  const spec = CARD_FORMATS.find((f) => f.id === format) ?? CARD_FORMATS[1];
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const update = () => setScale(Math.min(1, el.clientWidth / spec.width));
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [spec.width]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="w-full"
+      style={{ maxWidth: spec.width, height: Math.round(spec.height * scale) }}
+    >
+      <div style={{ width: spec.width, height: spec.height, transform: `scale(${scale})`, transformOrigin: "top left" }}>
+        {children}
+      </div>
+    </div>
   );
 }

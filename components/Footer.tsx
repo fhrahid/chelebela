@@ -1,7 +1,5 @@
 import Link from "next/link";
 import { Tv } from "lucide-react";
-import { DATASET_VERSION } from "@/lib/data";
-import { toBn } from "@/lib/bn";
 
 export default function Footer() {
   return (
@@ -32,7 +30,7 @@ export default function Footer() {
         </nav>
       </div>
       <div className="border-t border-ink/20 px-4 py-3 text-center text-xs text-ink-soft">
-        ডেটা ভার্সন {toBn(DATASET_VERSION)} · স্মৃতির তালিকা যাচাইধীন · স্প্রিন্ট টাইটানস · পয়েন্টফেক্স
+        ছেলেবেলা স্কোর · সবার ছেলেবেলা এক নয়, সবগুলোই সুন্দর
       </div>
     </footer>
   );

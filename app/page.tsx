@@ -4,7 +4,7 @@ import RetroTV from "@/components/RetroTV";
 import Reveal from "@/components/Reveal";
 import AlponaFlower from "@/components/AlponaFlower";
 import EraCassettePicker from "@/components/EraCassettePicker";
-import { CONTENT_REVIEW_NOTE, SORTED_CATEGORIES, TOTAL_ITEMS } from "@/lib/data";
+import { SORTED_CATEGORIES, TOTAL_ITEMS } from "@/lib/data";
 import { DEFAULT_QUIZ_LENGTH } from "@/lib/quiz";
 import { toBn } from "@/lib/bn";
 
@@ -130,9 +130,6 @@ export default function LandingPage() {
           <p className="mt-1 text-sm text-ink-soft">
             প্রতিটা ক্যাসেটে ওই দশকের স্মৃতি — মিক্স টেপে সবগুলো মিলেমিশে। চাইলে ক্যাসেটের সঙ্গে খাবার বা অন্য বিষয়ও বেছে নিতে পারো।
           </p>
-          <p className="mt-1 text-xs text-ink-soft">
-            কুইজ শেষ হলে উত্তরগুলো নাম-পরিচয় ছাড়া ৩০ দিনের জন্য রাখা হয়; প্রতিটি সেশনের ফল আলাদা থাকে।
-          </p>
           <div className="mt-5">
             <EraCassettePicker />
           </div>
@@ -160,24 +157,16 @@ export default function LandingPage() {
           </Reveal>
         </section>
 
-        {/* fairness + honesty notes */}
-        <section className="mt-14 grid gap-4 sm:grid-cols-2">
-          <Reveal>
-            <div className="h-full rounded-2xl border-2 border-ink bg-brand p-5 text-paper shadow-hard-sm">
-              <h2 className="font-display text-lg font-bold text-marigold">এটা পরীক্ষা নয়, মজার খেলা</h2>
-              <p className="mt-1.5 text-sm leading-relaxed text-paper/90">
-                কম স্কোর মানেই কম সুন্দর ছেলেবেলা নয় — প্রতিটা ছেলেবেলাই আলাদা। জন্মসাল দিয়ে স্কোর কাটা-ছাঁটা হয় না;
-                যা সত্যিই পেরেছ, সেটাই গোনা হয়।
-              </p>
-            </div>
-          </Reveal>
-          <Reveal delay={120}>
-            <div className="h-full rounded-2xl border-2 border-dashed border-ink/50 bg-paper-soft p-5">
-              <h2 className="font-display text-lg font-bold">একটা সৎ স্বীকারোক্তি</h2>
-              <p className="mt-1.5 text-sm leading-relaxed text-ink-soft">{CONTENT_REVIEW_NOTE}</p>
-            </div>
-          </Reveal>
-        </section>
+        {/* fairness note */}
+        <Reveal className="mt-14">
+          <section className="rounded-2xl border-2 border-ink bg-brand p-5 text-paper shadow-hard-sm">
+            <h2 className="font-display text-lg font-bold text-marigold">এটা পরীক্ষা নয়, মজার খেলা</h2>
+            <p className="mt-1.5 text-sm leading-relaxed text-paper/90">
+              কম স্কোর মানেই কম সুন্দর ছেলেবেলা নয় — প্রতিটা ছেলেবেলাই আলাদা। জন্মসাল দিয়ে স্কোর কাটা-ছাঁটা হয় না;
+              যা সত্যিই পেরেছ, সেটাই গোনা হয়।
+            </p>
+          </section>
+        </Reveal>
 
         {/* final CTA */}
         <Reveal className="mt-14">

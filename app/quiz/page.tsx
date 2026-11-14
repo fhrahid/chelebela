@@ -16,7 +16,7 @@ import { ArrowLeft, ArrowRight, ChevronDown, Home, X } from "lucide-react";
 import AlponaFlower from "@/components/AlponaFlower";
 import CassetteArtwork from "@/components/CassetteArtwork";
 import CategorySelect from "@/components/CategorySelect";
-import { CONTENT_REVIEW_NOTE, DEFAULT_DATASET, TOTAL_ITEMS } from "@/lib/data";
+import { DEFAULT_DATASET, TOTAL_ITEMS } from "@/lib/data";
 import { ALL_QUESTIONS_COUNT, answeredTooFast, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, getEraSet, resumeQuestionIndex, sampleQuiz, setPool } from "@/lib/quiz";
 import { quizStorage } from "@/lib/storage";
 import { computeResult } from "@/lib/scoring";
@@ -445,10 +445,6 @@ function QuizFlow() {
         </p>
       </div>
 
-      <p className="mt-8 rounded-xl border-2 border-dashed border-ink/40 bg-paper-soft p-3 text-xs leading-relaxed text-ink-soft">
-        {CONTENT_REVIEW_NOTE}
-      </p>
-
       {confirmExit && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-ink/60 p-4 sm:items-center">
           <div role="dialog" aria-modal="true" aria-label="ক্যাসেট বদলানো" className="w-full max-w-md rounded-2xl border-2 border-ink bg-paper-card p-5 shadow-hard-lg">
@@ -578,9 +574,6 @@ function SetSelect({
       <div className="mt-5">
         <CategorySelect value={categoryId} onChange={onCategoryChange} />
       </div>
-      <p className="mx-auto mt-4 max-w-md rounded-xl border border-ink/30 bg-paper-soft p-3 text-center text-xs leading-relaxed text-ink-soft">
-        কুইজ শেষ হলে এই সেশনের সব উত্তর আলাদা, নাম-পরিচয়হীন রেকর্ড হিসেবে SQLite-এ ৩০ দিন থাকবে। নতুন কুইজ আগের ফল মুছবে না।
-      </p>
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {ERA_SETS.map((s) => {
           const count = setPool(s.id, DEFAULT_DATASET.items, categoryId).length;
@@ -613,7 +606,6 @@ function SetSelect({
           );
         })}
       </div>
-      <p className="mt-8 text-center text-xs text-ink-soft">{CONTENT_REVIEW_NOTE}</p>
     </div>
   );
 }

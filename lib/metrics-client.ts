@@ -5,6 +5,7 @@ export type ClientMetricEvent =
   | { name: "quiz_abandoned"; era: string; categoryId?: string; answeredCount: number; durationSeconds: number }
   | { name: "result_card_downloaded" }
   | { name: "share_link_created" }
+  | { name: "share_facebook" }
   | { name: "comparison_opened" }
   | { name: "comparison_viewed"; comparableCount: number };
 

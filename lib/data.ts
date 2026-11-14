@@ -124,6 +124,3 @@ export function itemsByCategory(items: MemoryItem[], categories: Category[]): Ar
     .map((category) => ({ category, items: items.filter((i) => i.category_id === category.category_id) }))
     .filter((g) => g.items.length > 0);
 }
-
-/** Content-under-review notice shown in the UI (honesty per SRS NFR-012 / FLG-DS-01). */
-export const CONTENT_REVIEW_NOTE = "স্মৃতির তালিকা এখনো যাচাইধীন — ফলাফল মজা করার জন্য, ইতিহাসের চূড়ান্ত হিসাবে নয়।";

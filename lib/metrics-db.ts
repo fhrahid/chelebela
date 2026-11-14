@@ -35,6 +35,7 @@ const metricEventSchema = z.discriminatedUnion("name", [
   }).strict(),
   z.object({ name: z.literal("result_card_downloaded") }).strict(),
   z.object({ name: z.literal("share_link_created") }).strict(),
+  z.object({ name: z.literal("share_facebook") }).strict(),
   z.object({ name: z.literal("comparison_opened") }).strict(),
   z.object({
     name: z.literal("comparison_viewed"),
@@ -492,7 +493,7 @@ export function getAnalyticsDashboard(days: number): AnalyticsDashboardData {
       SELECT SUM(question_count) AS value FROM analytics_events
       WHERE event_name IN ('quiz_completed', 'quiz_abandoned') AND ${timeRange}
     `), start).value ?? 0),
-    shares: countByEvent.get("share_link_created") ?? 0,
+    shares: (countByEvent.get("share_link_created") ?? 0) + (countByEvent.get("share_facebook") ?? 0),
     cardDownloads: countByEvent.get("result_card_downloaded") ?? 0,
     comparisonsOpened,
     comparisonsViewed,
