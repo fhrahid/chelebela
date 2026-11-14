@@ -113,7 +113,7 @@ function Comparison({ friend, mine, mineAsked, mineSet }: { friend: Responses; m
     <div>
       <section className="rounded-2xl border-2 border-ink bg-paper-card p-6 text-center shadow-hard">
         <p className="flex items-center justify-center gap-2 font-display text-lg font-extrabold text-brand">
-          <Heart className="h-5 w-5 text-rose" aria-hidden="true" /> দুজন মিলে পেয়েছ {toBn(shared.length)}টি স্মৃতি
+          <Heart className="h-5 w-5 text-rose" aria-hidden="true" /> দুজনেই পেরেছ {toBn(shared.length)}টি স্মৃতি
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           <div className="rounded-xl border-2 border-ink bg-paper-soft p-3">
@@ -137,26 +137,26 @@ function Comparison({ friend, mine, mineAsked, mineSet }: { friend: Responses; m
       </section>
 
       <ListBlock
-        title={`দুজনেই পেয়েছ (${toBn(shared.length)})`}
+        title={`দুজনেই পেরেছ (${toBn(shared.length)})`}
         icon={<CheckCheck className="h-5 w-5 text-leaf" aria-hidden="true" />}
         items={shared}
         emptyText="দুজনের মিল একদম শূন্য — এও এক রকম রেকর্ড!"
         tone="leaf"
       />
       <ListBlock
-        title={`শুধু তুমি পেয়েছ (${toBn(onlyMine.length)})`}
+        title={`তুমি পেরেছ, বন্ধু পারেনি (${toBn(onlyMine.length)})`}
         icon={<Users className="h-5 w-5 text-brand" aria-hidden="true" />}
         items={onlyMine.slice(0, 12)}
         moreCount={Math.max(0, onlyMine.length - 12)}
-        emptyText="তুমি একা পাওয়ার মতো কিছু নেই — বন্ধু সবই পেয়েছ!"
+        emptyText="দুজনের উত্তর মিলিয়ে এমন কোনো স্মৃতি নেই, যা তুমি পেরেছ কিন্তু তোমার বন্ধু পারেনি।"
         tone="brand"
       />
       <ListBlock
-        title={`শুধু বন্ধু পেয়েছ (${toBn(onlyFriend.length)})`}
+        title={`বন্ধু পেরেছে, তুমি পারোনি (${toBn(onlyFriend.length)})`}
         icon={<X className="h-5 w-5 text-flame" aria-hidden="true" />}
         items={onlyFriend.slice(0, 12)}
         moreCount={Math.max(0, onlyFriend.length - 12)}
-        emptyText="বন্ধু একা পাওয়ার মতো কিছু নেই — তুমি সবই পেয়েছ!"
+        emptyText="দুজনের উত্তর মিলিয়ে এমন কোনো স্মৃতি নেই, যা তোমার বন্ধু পেরেছে কিন্তু তুমি পারোনি।"
         tone="flame"
       />
 
@@ -197,8 +197,9 @@ function ListBlock({
     tone === "leaf" ? "border-leaf/50 bg-leaf/10" : tone === "brand" ? "border-brand/40 bg-brand/10" : "border-flame/40 bg-flame/10";
   return (
     <section className="mt-5 rounded-2xl border-2 border-ink bg-paper-card p-5 shadow-hard-sm">
-      <h2 className="flex items-center gap-2 font-display text-base font-extrabold">
-        {icon} {title}
+      <h2 className="flex min-w-0 items-start gap-2 font-display text-base font-extrabold leading-[1.4]">
+        <span className="mt-0.5 shrink-0">{icon}</span>
+        <span className="min-w-0">{title}</span>
       </h2>
       {items.length === 0 ? (
         <p className="mt-2 text-sm text-ink-soft">{emptyText}</p>
