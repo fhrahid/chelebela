@@ -130,6 +130,9 @@ export default function LandingPage() {
           <p className="mt-1 text-sm text-ink-soft">
             প্রতিটা ক্যাসেটে ওই দশকের স্মৃতি — মিক্স টেপে সবগুলো মিলেমিশে। চাইলে ক্যাসেটের সঙ্গে খাবার বা অন্য বিষয়ও বেছে নিতে পারো।
           </p>
+          <p className="mt-1 text-xs text-ink-soft">
+            কুইজ শেষ হলে উত্তরগুলো নাম-পরিচয় ছাড়া ৩০ দিনের জন্য রাখা হয়; প্রতিটি সেশনের ফল আলাদা থাকে।
+          </p>
           <div className="mt-5">
             <EraCassettePicker />
           </div>

@@ -14,16 +14,25 @@ interface Props {
   result: QuizResult;
   responses: Responses;
   askedIds: string[];
+  sessionId?: string;
   cardId: string;
 }
 
-export default function ShareActions({ result, responses, askedIds, cardId }: Props) {
+export default function ShareActions({ result, responses, askedIds, sessionId, cardId }: Props) {
   const [busy, setBusy] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   const shareText = `আমার ছেলেবেলা স্কোর ${toBnPct(result.overallScore)} — ${result.label.title_bn}! তোমারটা কত?`;
 
   async function createCompareUrl(): Promise<string> {
+    if (sessionId && /^[A-Za-z0-9_-]{22}$/.test(sessionId)) {
+      try {
+        const existing = await fetch(`/api/comparisons/${sessionId}`, { cache: "no-store" });
+        if (existing.ok) return new URL(`/compare/${sessionId}`, window.location.origin).toString();
+      } catch {
+        // Fall through and make a fresh share record from this local result.
+      }
+    }
     const response = await fetch("/api/comparisons", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -149,7 +158,7 @@ export default function ShareActions({ result, responses, askedIds, cardId }: Pr
         </button>
       </div>
       <p className="mt-2 text-center text-xs text-ink-soft">
-        তুলনার জন্য নাম-পরিচয় ছাড়া উত্তরগুলো ৩০ দিন রাখা হয়। লিংক যার সঙ্গে শেয়ার করবে, সে-ই তুলনা দেখতে পারবে।
+        প্রতিটি সেশনের উত্তর নাম-পরিচয় ছাড়া ৩০ দিন থাকে। তুলনা লিংক যার সঙ্গে শেয়ার করবে, সে-ই সেগুলো দেখতে পারবে।
       </p>
     </div>
   );

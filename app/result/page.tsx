@@ -5,7 +5,7 @@
  * completed session (responses + askedIds + setId) from local storage and
  * recomputes deterministically over the ASKED items only (era-set sampling).
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight, BarChart3, Disc3, Info, Sparkles, Users } from "lucide-react";
@@ -20,7 +20,8 @@ import { computeResult } from "@/lib/scoring";
 import { getEraSet } from "@/lib/quiz";
 import { eraArtById, randomEraArt, type EraArt } from "@/lib/era-art";
 import { eraQuoteById, randomEraQuote, quoteKindLabel, type EraQuote } from "@/lib/era-quotes";
-import { quizStorage } from "@/lib/storage";
+import { quizStorage, type StoredResult } from "@/lib/storage";
+import { syncQuizSession } from "@/lib/session-sync";
 import { toBn, toBnPct } from "@/lib/bn";
 import type { Responses } from "@/lib/types";
 
@@ -30,31 +31,69 @@ export default function ResultPage() {
   const [askedIds, setAskedIds] = useState<string[] | undefined>(undefined);
   const [setId, setSetId] = useState<string | undefined>(undefined);
   const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
+  const [sessionId, setSessionId] = useState<string | undefined>(undefined);
+  const [serverSessionId, setServerSessionId] = useState<string | undefined>(undefined);
+  const [resultHistory, setResultHistory] = useState<StoredResult[]>([]);
+  const [isHistorical, setIsHistorical] = useState(false);
+  const [sessionSyncFailed, setSessionSyncFailed] = useState(false);
+  const [sessionSyncAttempt, setSessionSyncAttempt] = useState(0);
   const [pendingCompare, setPendingCompare] = useState<string | null>(null);
   const [displayScore, setDisplayScore] = useState(0);
   const [resultArt, setResultArt] = useState<EraArt | null>(null);
   const [resultQuote, setResultQuote] = useState<EraQuote | null>(null);
 
-  useEffect(() => {
-    const stored = quizStorage.loadResult();
-    if (stored) {
-      setResponses(stored.responses);
-      setAskedIds(stored.askedIds);
-      setSetId(stored.setId);
-      setCategoryId(stored.categoryId);
-      const storedResult = computeResult(stored.responses, DEFAULT_DATASET, { askedItemIds: stored.askedIds });
-      const leadingEra = storedResult.eraProfile[0]?.era_id ?? getEraSet(stored.setId)?.era;
-      const chosenArt = eraArtById(stored.eraArtId) ?? randomEraArt(leadingEra);
-      const chosenQuote = eraQuoteById(stored.eraQuoteId) ?? randomEraQuote(leadingEra);
-      setResultArt(chosenArt);
-      setResultQuote(chosenQuote);
-      if (!stored.eraArtId && chosenArt) quizStorage.saveResultArtId(chosenArt.art_id);
-      if (!stored.eraQuoteId && chosenQuote) quizStorage.saveResultQuoteId(chosenQuote.quote_id);
+  const showStoredResult = useCallback((stored: StoredResult) => {
+    setResponses(stored.responses);
+    setAskedIds(stored.askedIds);
+    setSetId(stored.setId);
+    setCategoryId(stored.categoryId);
+    setSessionId(stored.sessionId);
+    setServerSessionId(stored.serverSessionId);
+    setSessionSyncFailed(false);
+    setIsHistorical(stored.sessionId !== quizStorage.loadResult()?.sessionId);
+
+    const storedResult = computeResult(stored.responses, DEFAULT_DATASET, { askedItemIds: stored.askedIds });
+    const leadingEra = storedResult.eraProfile[0]?.era_id ?? getEraSet(stored.setId)?.era;
+    const chosenArt = eraArtById(stored.eraArtId) ?? randomEraArt(leadingEra);
+    const chosenQuote = eraQuoteById(stored.eraQuoteId) ?? randomEraQuote(leadingEra);
+    setResultArt(chosenArt);
+    setResultQuote(chosenQuote);
+    if (!stored.eraArtId && chosenArt && stored.sessionId) {
+      quizStorage.saveResultArtId(chosenArt.art_id, stored.sessionId);
     }
+    if (!stored.eraQuoteId && chosenQuote && stored.sessionId) {
+      quizStorage.saveResultQuoteId(chosenQuote.quote_id, stored.sessionId);
+    }
+  }, []);
+
+  useEffect(() => {
+    const history = quizStorage.loadResultHistory();
+    setResultHistory(history);
+    const stored = quizStorage.loadResult();
+    if (stored) showStoredResult(stored);
     const pending = quizStorage.loadPendingCompare();
     if (pending) setPendingCompare(pending.comparisonId);
     setMounted(true);
-  }, []);
+  }, [showStoredResult]);
+
+  useEffect(() => {
+    if (!sessionId || serverSessionId) return;
+    const stored = quizStorage.loadResultBySessionId(sessionId);
+    if (!stored || !stored.setId || !stored.askedIds?.length) return;
+    let cancelled = false;
+    void syncQuizSession(stored).then((savedId) => {
+      if (!savedId) {
+        if (!cancelled) setSessionSyncFailed(true);
+        return;
+      }
+      setResultHistory(quizStorage.loadResultHistory());
+      if (!cancelled) {
+        setServerSessionId(savedId);
+        setSessionSyncFailed(false);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [sessionId, serverSessionId, sessionSyncAttempt]);
 
   const result = useMemo(
     () => (responses ? computeResult(responses, DEFAULT_DATASET, { askedItemIds: askedIds }) : null),
@@ -110,11 +149,12 @@ export default function ResultPage() {
   const selectedCategory = DEFAULT_DATASET.categories.find((category) => category.category_id === categoryId);
   const dominantEra = result.eraProfile[0]?.era_id ?? set?.era;
   const eraArt = resultArt;
+  const previousSessions = resultHistory.filter((session) => session.sessionId !== sessionId);
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-16 pt-6">
       {/* pending compare banner */}
-      {pendingCompare && (
+      {pendingCompare && !isHistorical && (
         <Link
           href={pendingCompare.startsWith("legacy:")
             ? `/compare#${pendingCompare.slice("legacy:".length)}`
@@ -126,6 +166,68 @@ export default function ResultPage() {
             তোমার ফলাফল প্রস্তুত! এখন বন্ধুর স্কোরের সঙ্গে তুলনা করো — <span className="underline">তুলনা দেখো</span>
           </p>
         </Link>
+      )}
+
+      {isHistorical && (
+        <p className="mb-4 rounded-xl border-2 border-ink bg-marigold p-3 text-center text-sm font-bold">
+          আগের সেশনের ফলাফল দেখছ
+        </p>
+      )}
+      {sessionSyncFailed && (
+        <p className="mb-4 rounded-xl border border-flame bg-paper-card p-3 text-center text-sm text-ink-soft">
+          এই সেশনের উত্তর এই ডিভাইসে আছে, কিন্তু সার্ভারে সেভ হয়নি।
+          <button
+            type="button"
+            onClick={() => setSessionSyncAttempt((attempt) => attempt + 1)}
+            className="ml-2 font-bold text-brand underline underline-offset-2"
+          >
+            আবার চেষ্টা করো
+          </button>
+        </p>
+      )}
+
+      {previousSessions.length > 0 && (
+        <details className="mb-5 rounded-2xl border-2 border-ink bg-paper-card p-4 shadow-hard-sm">
+          <summary className="cursor-pointer font-display font-extrabold">
+            আগের ফলাফলগুলো দেখো ({toBn(previousSessions.length)})
+          </summary>
+          <ul className="mt-3 space-y-2">
+            {previousSessions.map((previous) => {
+              const previousResult = computeResult(previous.responses, DEFAULT_DATASET, {
+                askedItemIds: previous.askedIds,
+              });
+              const previousSet = getEraSet(previous.setId);
+              const previousCategory = DEFAULT_DATASET.categories.find(
+                (category) => category.category_id === previous.categoryId,
+              );
+              return (
+                <li key={previous.sessionId}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      showStoredResult(previous);
+                      window.scrollTo({ top: 0, behavior: "smooth" });
+                    }}
+                    className="flex min-h-12 w-full items-center justify-between gap-3 rounded-xl border border-ink/30 bg-paper-soft px-3 py-2 text-left"
+                  >
+                    <span>
+                      <span className="block text-sm font-bold">
+                        {previousSet?.label_bn ?? "কুইজ"}
+                        {previousCategory ? ` · ${previousCategory.name_bn}` : ""}
+                      </span>
+                      <span className="block text-xs text-ink-soft">
+                        {new Date(previous.completedAt).toLocaleDateString("bn-BD")} · {toBn(previous.askedIds?.length ?? Object.keys(previous.responses).length)}টি প্রশ্ন
+                      </span>
+                    </span>
+                    <span className="shrink-0 font-display text-lg font-extrabold text-brand">
+                      {toBnPct(previousResult.overallScore)}
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </details>
       )}
 
       {/* score hero */}
@@ -273,6 +375,7 @@ export default function ResultPage() {
               result={result}
               responses={responses}
               askedIds={askedIds ?? Object.keys(responses)}
+              sessionId={serverSessionId}
               cardId="result-card"
             />
           </div>

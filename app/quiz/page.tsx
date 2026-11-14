@@ -22,6 +22,7 @@ import { quizStorage } from "@/lib/storage";
 import { computeResult } from "@/lib/scoring";
 import { randomEraArt } from "@/lib/era-art";
 import { randomEraQuote } from "@/lib/era-quotes";
+import { syncQuizSession } from "@/lib/session-sync";
 import { toBn, toBnFraction } from "@/lib/bn";
 import type { MemoryItem, ResponseValue, Responses } from "@/lib/types";
 
@@ -119,15 +120,25 @@ function QuizFlow() {
         submittingRef.current = true;
         // Save the exact latest map; don't depend on React's async state flush.
         setTimeout(() => {
-          const askedIds = quizItems.map((item) => item.item_id);
-          const finalResult = computeResult(nextResponses, DEFAULT_DATASET, { askedItemIds: askedIds });
-          const leadingEra = finalResult.eraProfile[0]?.era_id ?? getEraSet(setId)?.era;
-          const art = randomEraArt(leadingEra);
-          const quote = randomEraQuote(leadingEra);
-          quizStorage.saveResult(nextResponses, askedIds, setId, art?.art_id, quote?.quote_id, categoryId ?? undefined);
-          quizStorage.addSeenIds(setId, Object.keys(nextResponses));
-          quizStorage.clearProgress();
-          router.push("/result");
+          void (async () => {
+            const askedIds = quizItems.map((item) => item.item_id);
+            const finalResult = computeResult(nextResponses, DEFAULT_DATASET, { askedItemIds: askedIds });
+            const leadingEra = finalResult.eraProfile[0]?.era_id ?? getEraSet(setId)?.era;
+            const art = randomEraArt(leadingEra);
+            const quote = randomEraQuote(leadingEra);
+            const saved = quizStorage.saveResult(
+              nextResponses,
+              askedIds,
+              setId,
+              art?.art_id,
+              quote?.quote_id,
+              categoryId ?? undefined,
+            );
+            quizStorage.addSeenIds(setId, Object.keys(nextResponses));
+            quizStorage.clearProgress();
+            await syncQuizSession(saved);
+            router.push("/result");
+          })();
         }, 320);
       } else {
         let promptToSlowDown = false;
@@ -358,6 +369,9 @@ function SetSelect({
       <div className="mt-5">
         <CategorySelect value={categoryId} onChange={onCategoryChange} />
       </div>
+      <p className="mx-auto mt-4 max-w-md rounded-xl border border-ink/30 bg-paper-soft p-3 text-center text-xs leading-relaxed text-ink-soft">
+        কুইজ শেষ হলে এই সেশনের সব উত্তর আলাদা, নাম-পরিচয়হীন রেকর্ড হিসেবে SQLite-এ ৩০ দিন থাকবে। নতুন কুইজ আগের ফল মুছবে না।
+      </p>
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {ERA_SETS.map((s) => {
           const count = setPool(s.id, DEFAULT_DATASET.items, categoryId).length;

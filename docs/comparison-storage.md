@@ -1,13 +1,15 @@
 # Anonymous comparison storage
 
-Comparison links contain a random 128-bit token in the short path `/compare/{id}`.
-The server stores only the response values, the asked memory IDs, timestamps, and
-a SHA-256 hash of the token in SQLite. It does not store names, contact details,
-account IDs, or IP addresses.
+Each completed quiz is stored as its own immutable session in SQLite. The session
+contains the response values, asked memory IDs, selected era/category, timestamps,
+and a SHA-256 hash of its random 128-bit ID. Comparison links use that session ID
+in the short path `/compare/{id}`. No names, contact details, account IDs, or IP
+addresses are stored in the quiz-session record.
 
-Records are available for 30 days. Expired rows are removed on the next
-comparison create/read request. The local quiz result remains in browser storage;
-it is sent to the server only when the user creates or shares a comparison link.
+Each session is available for 30 days; completing another quiz creates another
+row and does not overwrite older sessions. Expired rows are removed on the next
+quiz-session or comparison create/read request. A local history is also kept in
+browser storage.
 
 ## Persistent deployment storage
 

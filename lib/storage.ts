@@ -1,8 +1,7 @@
 /**
- * Local persistence (SRS §9.4). Everything stays in the browser:
- * nothing is sent to any server. All loaded JSON is Zod-validated because
- * localStorage is untrusted input (NFR-007 mindset) — corrupted data degrades
- * gracefully to "no saved state" instead of crashing the app.
+ * Local quiz-session persistence. Each completed session is kept separately;
+ * a new result updates the "latest" pointer without deleting prior sessions.
+ * All loaded JSON is Zod-validated because localStorage is untrusted input.
  */
 import { z } from "zod";
 import type { Responses } from "./types";
@@ -12,6 +11,8 @@ const itemId = z.string().regex(/^MEM_\d{3}$/);
 
 const resultSchema = z.object({
   responses: z.record(responseValue),
+  sessionId: z.string().regex(/^[A-Za-z0-9_-]{22}$/).optional(),
+  serverSessionId: z.string().regex(/^[A-Za-z0-9_-]{22}$/).optional(),
   askedIds: z.array(itemId).optional(),
   setId: z.string().optional(),
   categoryId: z.string().min(1).optional(),
@@ -22,6 +23,7 @@ const resultSchema = z.object({
 });
 
 const seenSchema = z.record(z.array(itemId));
+const resultHistorySchema = z.array(resultSchema);
 const pendingCompareSchema = z.object({
   comparisonId: z.string().min(1).max(4096),
   savedAt: z.number(),
@@ -34,6 +36,7 @@ const legacyPendingCompareSchema = z.object({
 const KEYS = {
   progress: "chhelebela:progress:v1", // old key, cleared for backwards compatibility
   result: "chhelebela:result:v1",
+  resultHistory: "chhelebela:results:v1",
   pendingCompare: "chhelebela:pending-compare:v1",
   seen: "chhelebela:seen:v1",
 } as const;
@@ -62,8 +65,26 @@ function safeRemove(key: string): void {
   }
 }
 
+function createSessionId(): string {
+  const bytes = new Uint8Array(16);
+  if (typeof crypto !== "undefined" && typeof crypto.getRandomValues === "function") {
+    try {
+      crypto.getRandomValues(bytes);
+    } catch {
+      for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+    }
+  } else {
+    for (let i = 0; i < bytes.length; i++) bytes[i] = Math.floor(Math.random() * 256);
+  }
+  let binary = "";
+  for (const byte of bytes) binary += String.fromCharCode(byte);
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
 export interface StoredResult {
   responses: Responses;
+  sessionId?: string;
+  serverSessionId?: string;
   askedIds?: string[];
   setId?: string;
   categoryId?: string;
@@ -89,10 +110,54 @@ export const quizStorage = {
     if (!raw) return null;
     try {
       const parsed = resultSchema.safeParse(JSON.parse(raw));
-      return parsed.success ? parsed.data : null;
+      if (!parsed.success) return null;
+      if (parsed.data.sessionId) return parsed.data;
+      const upgraded = { ...parsed.data, sessionId: createSessionId() };
+      safeSet(KEYS.result, JSON.stringify(upgraded));
+      return upgraded;
     } catch {
       return null;
     }
+  },
+  loadResultHistory(): StoredResult[] {
+    const raw = safeGet(KEYS.resultHistory);
+    let history: StoredResult[] = [];
+    let legacyHistory: StoredResult[] = [];
+    if (raw) {
+      try {
+        const parsed = resultHistorySchema.safeParse(JSON.parse(raw));
+        if (parsed.success) {
+          legacyHistory = parsed.data;
+          history = parsed.data.map((result) => ({
+            ...result,
+            sessionId: result.sessionId ?? createSessionId(),
+          }));
+        }
+      } catch {
+        history = [];
+      }
+    }
+
+    const latest = this.loadResult();
+    if (latest) {
+      const existingIndex = history.findIndex((result, index) =>
+        result.sessionId === latest.sessionId ||
+        (!legacyHistory[index]?.sessionId &&
+          result.completedAt === latest.completedAt &&
+          result.setId === latest.setId &&
+          JSON.stringify(result.responses) === JSON.stringify(latest.responses))
+      );
+      if (existingIndex < 0) history.unshift(latest);
+      else history[existingIndex] = latest;
+    }
+
+    const unique = [...new Map(history.map((result) => [result.sessionId, result])).values()]
+      .sort((a, b) => b.completedAt - a.completedAt);
+    safeSet(KEYS.resultHistory, JSON.stringify(unique));
+    return unique;
+  },
+  loadResultBySessionId(sessionId: string): StoredResult | null {
+    return this.loadResultHistory().find((result) => result.sessionId === sessionId) ?? null;
   },
   saveResult(
     responses: Responses,
@@ -101,9 +166,11 @@ export const quizStorage = {
     eraArtId?: string,
     eraQuoteId?: string,
     categoryId?: string,
-  ): void {
-    safeSet(KEYS.result, JSON.stringify({
+  ): StoredResult {
+    const previous = this.loadResultHistory();
+    const result: StoredResult = {
       responses,
+      sessionId: createSessionId(),
       askedIds,
       setId,
       ...(categoryId ? { categoryId } : {}),
@@ -111,17 +178,23 @@ export const quizStorage = {
       ...(eraArtId ? { eraArtId } : {}),
       ...(eraQuoteId ? { eraQuoteId } : {}),
       completedAt: Date.now(),
-    }));
+    };
+    const history = [result, ...previous];
+    safeSet(KEYS.result, JSON.stringify(result));
+    safeSet(KEYS.resultHistory, JSON.stringify(history));
+    return result;
   },
-  saveResultArtId(eraArtId: string): void {
-    const result = this.loadResult();
-    if (!result) return;
-    safeSet(KEYS.result, JSON.stringify({ ...result, eraArtId }));
+  saveResultArtId(eraArtId: string, sessionId?: string): void {
+    const result = sessionId ? this.loadResultBySessionId(sessionId) : this.loadResult();
+    if (result?.sessionId) updateStoredResult(result.sessionId, { eraArtId });
   },
-  saveResultQuoteId(eraQuoteId: string): void {
-    const result = this.loadResult();
-    if (!result) return;
-    safeSet(KEYS.result, JSON.stringify({ ...result, eraQuoteId }));
+  saveResultQuoteId(eraQuoteId: string, sessionId?: string): void {
+    const result = sessionId ? this.loadResultBySessionId(sessionId) : this.loadResult();
+    if (result?.sessionId) updateStoredResult(result.sessionId, { eraQuoteId });
+  },
+  saveServerSessionId(sessionId: string, serverSessionId: string): void {
+    if (!/^[A-Za-z0-9_-]{22}$/.test(serverSessionId)) return;
+    updateStoredResult(sessionId, { serverSessionId });
   },
   clearResult(): void {
     safeRemove(KEYS.result);
@@ -170,3 +243,15 @@ export const quizStorage = {
     safeRemove(KEYS.seen);
   },
 };
+
+function updateStoredResult(sessionId: string, patch: Partial<StoredResult>): void {
+  const history = quizStorage.loadResultHistory().map((result) =>
+    result.sessionId === sessionId ? { ...result, ...patch } : result
+  );
+  safeSet(KEYS.resultHistory, JSON.stringify(history));
+
+  const latest = quizStorage.loadResult();
+  if (latest?.sessionId === sessionId) {
+    safeSet(KEYS.result, JSON.stringify({ ...latest, ...patch }));
+  }
+}
