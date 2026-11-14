@@ -180,7 +180,7 @@ export function getComparison(token: string): StoredComparison | null {
 }
 
 /** Save one completed quiz as an immutable, anonymous session record. */
-export function createQuizSession(value: unknown): { id: string; expiresAt: number } | null {
+export function createQuizSession(value: unknown): { id: string; expiresAt: number; created: boolean } | null {
   const parsed = quizSessionInputSchema.safeParse(value);
   if (!parsed.success) return null;
 
@@ -217,7 +217,7 @@ export function createQuizSession(value: unknown): { id: string; expiresAt: numb
       prior.asked_ids_json === JSON.stringify(askedIds) &&
       prior.set_id === setId &&
       prior.category_id === (categoryId ?? null);
-    return sameSession ? { id, expiresAt: prior.expires_at } : null;
+    return sameSession ? { id, expiresAt: prior.expires_at, created: false } : null;
   }
 
   const activeCount = db.prepare("SELECT COUNT(*) AS count FROM quiz_sessions").get() as { count: number };
@@ -237,7 +237,7 @@ export function createQuizSession(value: unknown): { id: string; expiresAt: numb
     now,
     expiresAt,
   );
-  return { id, expiresAt };
+  return { id, expiresAt, created: true };
 }
 
 export function getQuizSession(token: string): StoredQuizSession | null {

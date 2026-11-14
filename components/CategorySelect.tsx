@@ -2,6 +2,7 @@
 
 import { DEFAULT_DATASET } from "@/lib/data";
 import { toBn } from "@/lib/bn";
+import { trackMetric } from "@/lib/metrics-client";
 
 const CATEGORIES = DEFAULT_DATASET.categories.filter((category) =>
   DEFAULT_DATASET.items.some((item) => item.category_id === category.category_id),
@@ -22,7 +23,11 @@ export default function CategorySelect({
       <select
         id="quiz-category"
         value={value ?? ""}
-        onChange={(event) => onChange(event.target.value || null)}
+        onChange={(event) => {
+          const selected = event.target.value || null;
+          onChange(selected);
+          trackMetric({ name: "category_selected", categoryId: selected ?? "all" });
+        }}
         className="mt-2 min-h-12 w-full rounded-xl border-2 border-ink bg-paper-card px-3 py-2 font-semibold"
       >
         <option value="">সব বিষয়</option>

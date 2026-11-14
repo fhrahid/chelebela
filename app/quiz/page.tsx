@@ -23,6 +23,7 @@ import { computeResult } from "@/lib/scoring";
 import { randomEraArt } from "@/lib/era-art";
 import { randomEraQuote } from "@/lib/era-quotes";
 import { syncQuizSession } from "@/lib/session-sync";
+import { trackMetric } from "@/lib/metrics-client";
 import { toBn, toBnFraction } from "@/lib/bn";
 import type { MemoryItem, ResponseValue, Responses } from "@/lib/types";
 
@@ -54,11 +55,19 @@ function QuizFlow() {
   const submittingRef = useRef(false);
   const answerLockRef = useRef(false);
   const answerTimesRef = useRef<number[]>([]);
+  const quizStartedAtRef = useRef<number | null>(null);
 
   const startSet = useCallback((id: string, count: number, selectedCategoryId: string | null) => {
     const seen = [...new Set(Object.values(quizStorage.loadSeenIds()).flat())];
     const { items } = sampleQuiz(id, DEFAULT_DATASET.items, count, undefined, seen, selectedCategoryId);
     if (items.length === 0) return;
+    quizStartedAtRef.current = Date.now();
+    trackMetric({
+      name: "quiz_started",
+      era: id,
+      ...(selectedCategoryId ? { categoryId: selectedCategoryId } : {}),
+      questionCount: items.length,
+    });
     setSetId(id);
     setCategoryId(selectedCategoryId);
     setQuizItems(items);
@@ -269,6 +278,17 @@ function QuizFlow() {
               <button
                 type="button"
                 onClick={() => {
+                  if (answered > 0) {
+                    trackMetric({
+                      name: "quiz_abandoned",
+                      era: setId ?? "mix",
+                      ...(categoryId ? { categoryId } : {}),
+                      answeredCount: answered,
+                      durationSeconds: quizStartedAtRef.current
+                        ? Math.max(0, Math.round((Date.now() - quizStartedAtRef.current) / 1000))
+                        : 0,
+                    });
+                  }
                   quizStorage.clearProgress();
                   setConfirmExit(false);
                   setPhase("select");

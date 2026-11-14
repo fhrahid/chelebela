@@ -9,6 +9,7 @@ import { useState } from "react";
 import { Download, Link2, Share2, CheckCheck } from "lucide-react";
 import type { QuizResult, Responses } from "@/lib/types";
 import { toBnPct } from "@/lib/bn";
+import { trackMetric } from "@/lib/metrics-client";
 
 interface Props {
   result: QuizResult;
@@ -66,6 +67,7 @@ export default function ShareActions({ result, responses, askedIds, sessionId, c
       a.click();
       a.remove();
       URL.revokeObjectURL(url);
+      trackMetric({ name: "result_card_downloaded" });
     } catch {
       alert("ছবিটা নামাতে সমস্যা হলো — আরেকবার চেষ্টা করো, বা স্ক্রিনশট নিয়ে শেয়ার করো।");
     } finally {
@@ -93,6 +95,7 @@ export default function ShareActions({ result, responses, askedIds, sessionId, c
             const file = new File([blob], "chhelebela-score.png", { type: "image/png" });
             if (navigator.canShare({ files: [file] })) {
               await navigator.share({ text: shareText, url, files: [file] });
+              trackMetric({ name: "share_link_created" });
               return;
             }
           }
@@ -100,8 +103,10 @@ export default function ShareActions({ result, responses, askedIds, sessionId, c
           /* fall through to text-only share */
         }
         await navigator.share({ text: shareText, url });
+        trackMetric({ name: "share_link_created" });
       } else {
         await copyToClipboard(url);
+        trackMetric({ name: "share_link_created" });
       }
     } catch {
       /* user cancelled or API unavailable — no-op */
@@ -131,6 +136,7 @@ export default function ShareActions({ result, responses, askedIds, sessionId, c
     setBusy("link");
     try {
       await copyToClipboard(await createCompareUrl());
+      trackMetric({ name: "share_link_created" });
     } catch {
       alert("তুলনা লিংক তৈরি করা যায়নি — একটু পরে আবার চেষ্টা করো।");
     } finally {

@@ -1,14 +1,20 @@
 import { quizStorage, type StoredResult } from "@/lib/storage";
+import { prepareMetricsIdentity } from "@/lib/metrics-client";
 
 /** Idempotently persist one completed browser session to the anonymous server store. */
 export async function syncQuizSession(result: StoredResult): Promise<string | null> {
   if (!result.sessionId || !result.setId || !result.askedIds?.length) return null;
   const controller = new AbortController();
   const timeout = window.setTimeout(() => controller.abort(), 8_000);
+  const optedOut = typeof navigator !== "undefined" && ["1", "yes"].includes(navigator.doNotTrack ?? "");
   try {
+    await prepareMetricsIdentity();
     const response = await fetch("/api/sessions", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(optedOut ? { "X-Analytics-Opt-Out": "1" } : {}),
+      },
       body: JSON.stringify({
         id: result.sessionId,
         responses: result.responses,

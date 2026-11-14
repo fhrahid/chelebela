@@ -81,7 +81,11 @@ describe("anonymous SQLite comparison records", () => {
     expect(getComparison(firstInput.id)?.responses).toEqual(record.responses);
 
     // Retrying the same insert is idempotent; changed answers never overwrite it.
-    expect(createQuizSession(firstInput)).toEqual(first);
+    expect(createQuizSession(firstInput)).toMatchObject({
+      id: first?.id,
+      expiresAt: first?.expiresAt,
+      created: false,
+    });
     expect(createQuizSession({
       ...firstInput,
       responses: { ...record.responses, MEM_001: "not_experienced" },

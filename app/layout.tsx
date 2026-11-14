@@ -14,6 +14,7 @@ import "@fontsource/hind-siliguri/latin-700.css";
 import "./globals.css";
 import Footer from "@/components/Footer";
 import SiteHeader from "@/components/SiteHeader";
+import VisitorTracker from "@/components/VisitorTracker";
 
 export const metadata: Metadata = {
   title: {
@@ -44,6 +45,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="bn">
       <body className="flex min-h-dvh flex-col font-sans antialiased">
+        <VisitorTracker />
         <SiteHeader />
         <main className="relative z-10 flex-1">{children}</main>
         <Footer />

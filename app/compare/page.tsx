@@ -4,7 +4,7 @@
  * Opens an anonymous, short-ID comparison link (or a legacy fragment link).
  * Only memories both people were asked about are compared.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCheck, Heart, TriangleAlert, Users, X } from "lucide-react";
 import { DEFAULT_DATASET } from "@/lib/data";
@@ -15,6 +15,7 @@ import { quizStorage } from "@/lib/storage";
 import { getEraSet } from "@/lib/quiz";
 import { toBn, toBnPct } from "@/lib/bn";
 import type { Responses } from "@/lib/types";
+import { trackMetric } from "@/lib/metrics-client";
 
 type ViewState =
   | { kind: "loading" }
@@ -58,6 +59,7 @@ export default function ComparePage() {
             return;
           }
           const stored = await response.json() as { responses: Responses; askedIds: string[] };
+          trackMetric({ name: "comparison_opened" });
           friend = stored.responses;
           friendAsked = stored.askedIds;
           pendingId = pathId;
@@ -73,6 +75,7 @@ export default function ComparePage() {
         }
         friend = decoded.responses;
         friendAsked = Object.keys(decoded.responses);
+        trackMetric({ name: "comparison_opened" });
         pendingId = `legacy:${legacyPayload}`;
       } else {
         if (!cancelled) setView({ kind: "no-payload" });
@@ -189,6 +192,12 @@ function Comparison({
     () => compareResponses(mine, mineAsked, friend, friendAsked, DEFAULT_DATASET),
     [mine, mineAsked, friend, friendAsked],
   );
+  const comparisonViewed = useRef(false);
+  useEffect(() => {
+    if (comparisonViewed.current) return;
+    comparisonViewed.current = true;
+    trackMetric({ name: "comparison_viewed", comparableCount: comparison.comparableItems.length });
+  }, [comparison.comparableItems.length]);
 
   return (
     <div>

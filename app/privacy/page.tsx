@@ -24,14 +24,14 @@ export default function PrivacyPage() {
           <li>কোনো অ্যাকাউন্ট, লগইন বা রেজিস্ট্রেশন লাগে না।</li>
           <li>নাম, ইমেইল, ফোন নম্বর বা জন্মসাল — কিছুই জিজ্ঞেস করা হয় না।</li>
           <li>নাম, ইমেইল, ফোন বা অ্যাকাউন্টের তথ্য সার্ভারে পাঠানো হয় না।</li>
-          <li>এই সংস্করণে কোনো অ্যানালিটিক্স বা বিজ্ঞাপন ট্র্যাকার নেই।</li>
+          <li>কোনো তৃতীয়-পক্ষের বিজ্ঞাপন বা অ্যানালিটিক্স ট্র্যাকার নেই; ব্যবহার মাপতে শুধু এই সাইটের নিজস্ব নাম-পরিচয়হীন মেট্রিক্স কুকি আছে।</li>
         </ul>
       </section>
 
       <section className="mt-6 rounded-2xl border-2 border-ink bg-paper-card p-5 shadow-hard-sm">
         <h2 className="font-display text-lg font-extrabold">যা তোমার ব্রাউজারে জমা থাকে</h2>
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          কুইজ ও ফলাফলের জন্য কয়েকটি ছোট তথ্য, শুধু তোমার ডিভাইসের লোকাল স্টোরেজে (localStorage) — নজর রাখার জন্য নয়:
+          কুইজ চলার অগ্রগতি ও ফলের একটি local copy তোমার ডিভাইসের লোকাল স্টোরেজে (localStorage) থাকে:
         </p>
         <ul className="mt-2 list-disc space-y-1.5 pl-5 text-sm leading-relaxed text-ink-soft">
           <li>
@@ -54,8 +54,21 @@ export default function PrivacyPage() {
         <p className="mt-2 text-sm leading-relaxed text-ink-soft">
           প্রতিটি কুইজ শেষ হলে তার উত্তর ও কোন প্রশ্নগুলো করা হয়েছিল—একটি আলাদা, এলোমেলো ID-সহ রেকর্ড হিসেবে SQLite-এ
           ৩০ দিনের জন্য রাখা হয়। নতুন সেশন পুরোনো রেকর্ড বদলায় না। কোনো নাম, ইমেইল, ফোন নম্বর, অ্যাকাউন্ট বা
-          ডিভাইস ID রাখা হয় না। তুলনা লিংকটি সেই সেশন ID ব্যবহার করে; লিংক যার কাছে থাকবে, সে উত্তরগুলো দেখে
+          কোনো ডিভাইস বা যোগাযোগের ID এই কুইজ-রেকর্ডে রাখা হয় না। তুলনা লিংকটি সেই সেশন ID ব্যবহার করে; লিংক যার কাছে থাকবে, সে উত্তরগুলো দেখে
           তুলনা করতে পারবে। মেয়াদোত্তীর্ণ তথ্য পরের কুইজ-সেশন বা তুলনা-অনুরোধে মুছে ফেলা হয়।
+        </p>
+      </section>
+
+      <section className="mt-6 rounded-2xl border-2 border-ink bg-paper-card p-5 shadow-hard-sm">
+        <h2 className="font-display text-lg font-extrabold">ব্যবহার-মেট্রিক্স কুকি</h2>
+        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+          সত্যিকারের সাইট-ব্যবহার গুনতে একটি এলোমেলো first-party browser ID (সর্বোচ্চ ১ বছর) এবং ৩০ মিনিটের session cookie
+          ব্যবহার হয়। ডেটাবেসে কুকির raw মান নয়, তার hash থাকে। পেজ দেখা, কুইজ শুরু/শেষ/ছেড়ে যাওয়া, প্রশ্নের অবস্থান,
+          বেছে নেওয়া বিষয়/দশক, স্কোর, কার্ড ডাউনলোড ও তুলনা-লিংকের ব্যবহার গোনা হয়। ডিভাইস, browser ও operating
+          system শুধু মোটামুটি শ্রেণি হিসেবে রাখা হয়; raw IP, পুরো referrer URL বা raw user-agent রাখা হয় না।
+          “Do Not Track” চালু থাকলে usage metrics সংগ্রহ করা হয় না।
+          কাঁচা মেট্রিক্স ৯০ দিন পর মুছে যায়। পরিচিত crawler-এর user-agent বাদ দেওয়া হয়, তবে unique browser মানেই
+          নিশ্চিত একজন মানুষ নয়—কুকি মুছলে বা অন্য browser/device ব্যবহার করলে একই মানুষ একাধিকবার গোনা হতে পারে।
         </p>
       </section>
 
