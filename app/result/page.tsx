@@ -8,8 +8,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, BarChart3, Disc3, Info, Sparkles, Users } from "lucide-react";
-import CassetteCard, { CARD_FORMATS, type CardFormat } from "@/components/CassetteCard";
+import { ArrowRight, BarChart3, Disc3, ImagePlus, Info, Sparkles, Users, X } from "lucide-react";
+import CassetteCard, { CARD_FORMATS, PHOTO_FILTERS, type CardFormat, type PhotoFilter } from "@/components/CassetteCard";
 import AlponaFlower from "@/components/AlponaFlower";
 import EraBars from "@/components/EraBars";
 import CategoryBars from "@/components/CategoryBars";
@@ -42,6 +42,9 @@ export default function ResultPage() {
   const [resultArt, setResultArt] = useState<EraArt | null>(null);
   const [resultQuote, setResultQuote] = useState<EraQuote | null>(null);
   const [cardFormat, setCardFormat] = useState<CardFormat>("square");
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const [photoFilter, setPhotoFilter] = useState<PhotoFilter>("90s");
+  const [photoError, setPhotoError] = useState<string | null>(null);
 
   const showStoredResult = useCallback((stored: StoredResult) => {
     setResponses(stored.responses);
@@ -151,6 +154,24 @@ export default function ResultPage() {
   const dominantEra = result.eraProfile[0]?.era_id ?? set?.era;
   const eraArt = resultArt;
   const previousSessions = resultHistory.filter((session) => session.sessionId !== sessionId);
+
+  const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setPhotoError("এটা ছবি ফাইল নয় — একটা ছবি বেছে দাও।");
+      return;
+    }
+    try {
+      const dataUrl = await downscaleToDataUrl(file, 1200);
+      setPhotoUrl(dataUrl);
+      setPhotoFilter(result.eraProfile[0]?.era_id === "80s" ? "80s" : "90s");
+      setPhotoError(null);
+    } catch {
+      setPhotoError("ছবিটা পড়া গেল না — অন্য একটা ছবি দিয়ে চেষ্টা করো।");
+    }
+  };
 
   return (
     <div className="mx-auto max-w-2xl px-4 pb-16 pt-6">
@@ -380,6 +401,47 @@ export default function ResultPage() {
               );
             })}
           </div>
+          {/* personal photo + retro filter */}
+          <div className="flex w-full max-w-md flex-col items-center gap-2">
+            <div className="flex flex-wrap justify-center gap-2">
+              <label className="flex min-h-11 cursor-pointer items-center gap-2 rounded-xl border-2 border-ink bg-paper-card px-3 py-2 text-sm font-bold shadow-hard-sm transition-transform active:scale-95">
+                <ImagePlus className="h-4 w-4" aria-hidden="true" />
+                {photoUrl ? "ছবি বদলাও" : "নিজের ছবি দাও"}
+                <input type="file" accept="image/*" className="hidden" onChange={handlePhotoChange} />
+              </label>
+              {photoUrl && (
+                <button
+                  type="button"
+                  onClick={() => setPhotoUrl(null)}
+                  className="flex min-h-11 items-center gap-1.5 rounded-xl border-2 border-ink/40 bg-paper-soft px-3 py-2 text-sm font-bold"
+                >
+                  <X className="h-4 w-4" aria-hidden="true" /> সরাও
+                </button>
+              )}
+            </div>
+            {photoUrl && (
+              <div className="flex flex-wrap justify-center gap-2" role="radiogroup" aria-label="ছবির ফিল্টার বেছে নাও">
+                {PHOTO_FILTERS.map((filterSpec) => {
+                  const active = photoFilter === filterSpec.id;
+                  return (
+                    <button
+                      key={filterSpec.id}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() => setPhotoFilter(filterSpec.id)}
+                      className={`min-h-11 rounded-xl border-2 border-ink px-3 py-1.5 text-center text-sm font-bold transition-transform active:scale-95 ${
+                        active ? "bg-marigold shadow-hard-sm" : "bg-paper-card"
+                      }`}
+                    >
+                      {filterSpec.label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+            {photoError && <p className="text-xs font-semibold text-brick">{photoError}</p>}
+          </div>
           <ScaledCardPreview format={cardFormat}>
             <CassetteCard
               result={result}
@@ -389,6 +451,8 @@ export default function ResultPage() {
               dominantEraLabel={result.eraProfile[0]?.label_bn ?? set?.label_bn}
               cardId="result-card"
               format={cardFormat}
+              photoUrl={photoUrl}
+              photoFilter={photoFilter}
             />
           </ScaledCardPreview>
           <div className="w-full max-w-md">
@@ -495,4 +559,31 @@ function ScaledCardPreview({ format, children }: { format: CardFormat; children:
       </div>
     </div>
   );
+}
+
+/**
+ * Loads a picked photo as a JPEG data URL capped at maxEdge on its longest
+ * side (keeps the card light and reliably capturable by html-to-image).
+ * Browsers apply EXIF orientation when decoding, so portrait phone shots
+ * stay upright.
+ */
+async function downscaleToDataUrl(file: File, maxEdge: number): Promise<string> {
+  const objectUrl = URL.createObjectURL(file);
+  try {
+    const img = document.createElement("img");
+    img.src = objectUrl;
+    await img.decode();
+    const scale = Math.min(1, maxEdge / Math.max(img.naturalWidth, img.naturalHeight));
+    const width = Math.max(1, Math.round(img.naturalWidth * scale));
+    const height = Math.max(1, Math.round(img.naturalHeight * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("canvas unavailable");
+    ctx.drawImage(img, 0, 0, width, height);
+    return canvas.toDataURL("image/jpeg", 0.9);
+  } finally {
+    URL.revokeObjectURL(objectUrl);
+  }
 }

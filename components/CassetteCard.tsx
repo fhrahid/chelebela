@@ -1,10 +1,11 @@
 "use client";
 
 /**
- * Downloadable cassette-J-card result card with a fully visible era image.
- * The card renders at a fixed CSS pixel size for the chosen social format so
- * the captured PNG (at pixelRatio 2) matches each platform exactly:
- * feed 1200×630, square 1080×1080, portrait 1080×1350, story 1080×1920.
+ * Downloadable cassette-J-card result card. The card renders at a fixed CSS
+ * pixel size for the chosen social format so the captured PNG (at pixelRatio
+ * 2) matches each platform exactly: feed 1200×630, square 1080×1080, portrait
+ * 1080×1350, story 1080×1920. A personal photo can replace the era artwork,
+ * with a retro 80s/90s film filter applied on top.
  */
 import Image from "next/image";
 import AlponaFlower from "@/components/AlponaFlower";
@@ -31,6 +32,21 @@ export const CARD_FORMATS: CardFormatSpec[] = [
   { id: "story", label: "স্টোরি / রিল", hint: "৯:১৬ · ১০৮০×১৯২০", width: 540, height: 960 },
 ];
 
+export type PhotoFilter = "none" | "80s" | "90s";
+
+export const PHOTO_FILTERS: Array<{ id: PhotoFilter; label: string }> = [
+  { id: "80s", label: "৮০'s ফিল্টার" },
+  { id: "90s", label: "৯০'s ফিল্টার" },
+  { id: "none", label: "ফিল্টার ছাড়া" },
+];
+
+/** Warm faded film for the 80s; cooler, slightly hazy compact-camera look for the 90s. */
+const PHOTO_FILTER_CSS: Record<PhotoFilter, string> = {
+  none: "",
+  "80s": "sepia(0.32) saturate(1.4) contrast(0.95) brightness(1.06) hue-rotate(-8deg)",
+  "90s": "saturate(1.25) contrast(1.1) brightness(1.03) hue-rotate(6deg) sepia(0.12)",
+};
+
 const ERA_COLORS: Record<string, string> = {
   "80s": "var(--color-brass)",
   "90s": "var(--color-leaf)",
@@ -46,6 +62,8 @@ export default function CassetteCard({
   dominantEra,
   dominantEraLabel,
   format = "square",
+  photoUrl,
+  photoFilter = "none",
 }: {
   result: QuizResult;
   art: EraArt | null;
@@ -54,6 +72,8 @@ export default function CassetteCard({
   dominantEra?: string;
   dominantEraLabel?: string;
   format?: CardFormat;
+  photoUrl?: string | null;
+  photoFilter?: PhotoFilter;
 }) {
   const spec = CARD_FORMATS.find((f) => f.id === format) ?? CARD_FORMATS[1];
   const leadingEraId = result.eraProfile[0]?.era_id ?? dominantEra;
@@ -71,16 +91,48 @@ export default function CassetteCard({
       <div className="rickshaw-stripe h-2 w-full shrink-0" aria-hidden="true" />
 
       {format === "feed" && (
-        <FeedBody result={result} art={art} leadingEraLabel={leadingEraLabel} credit={credit} />
+        <FeedBody
+          result={result}
+          art={art}
+          photoUrl={photoUrl}
+          photoFilter={photoFilter}
+          leadingEraLabel={leadingEraLabel}
+          credit={credit}
+        />
       )}
       {format === "square" && (
-        <SquareBody result={result} art={art} leadingEraId={leadingEraId} leadingEraLabel={leadingEraLabel} credit={credit} />
+        <SquareBody
+          result={result}
+          art={art}
+          photoUrl={photoUrl}
+          photoFilter={photoFilter}
+          leadingEraId={leadingEraId}
+          leadingEraLabel={leadingEraLabel}
+          credit={credit}
+        />
       )}
       {format === "portrait" && (
-        <PortraitBody result={result} art={art} quote={quote} leadingEraId={leadingEraId} leadingEraLabel={leadingEraLabel} credit={credit} />
+        <PortraitBody
+          result={result}
+          art={art}
+          quote={quote}
+          photoUrl={photoUrl}
+          photoFilter={photoFilter}
+          leadingEraId={leadingEraId}
+          leadingEraLabel={leadingEraLabel}
+          credit={credit}
+        />
       )}
       {format === "story" && (
-        <StoryBody result={result} art={art} quote={quote} leadingEraLabel={leadingEraLabel} credit={credit} />
+        <StoryBody
+          result={result}
+          art={art}
+          quote={quote}
+          photoUrl={photoUrl}
+          photoFilter={photoFilter}
+          leadingEraLabel={leadingEraLabel}
+          credit={credit}
+        />
       )}
     </div>
   );
@@ -91,11 +143,15 @@ export default function CassetteCard({
 function FeedBody({
   result,
   art,
+  photoUrl,
+  photoFilter,
   leadingEraLabel,
   credit,
 }: {
   result: QuizResult;
   art: EraArt | null;
+  photoUrl?: string | null;
+  photoFilter: PhotoFilter;
   leadingEraLabel?: string;
   credit: string | null;
 }) {
@@ -117,11 +173,13 @@ function FeedBody({
         </div>
         <CardFooter result={result} className="mt-auto" />
       </div>
-      {art && (
+      {photoUrl ? (
+        <UserPhoto src={photoUrl} filter={photoFilter} badge={leadingEraLabel} className="min-h-0 w-[220px] shrink-0" />
+      ) : art ? (
         <div className="flex w-[220px] shrink-0 flex-col">
           <EraImage art={art} badge={leadingEraLabel} creditOverlay={credit} className="min-h-0 flex-1" />
         </div>
-      )}
+      ) : null}
     </div>
   );
 }
@@ -129,12 +187,16 @@ function FeedBody({
 function SquareBody({
   result,
   art,
+  photoUrl,
+  photoFilter,
   leadingEraId,
   leadingEraLabel,
   credit,
 }: {
   result: QuizResult;
   art: EraArt | null;
+  photoUrl?: string | null;
+  photoFilter: PhotoFilter;
   leadingEraId?: string;
   leadingEraLabel?: string;
   credit: string | null;
@@ -142,7 +204,7 @@ function SquareBody({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 p-3.5">
       <CardHeader />
-      <ImageBlock art={art} leadingEraLabel={leadingEraLabel} credit={credit} />
+      <ImageBlock art={art} photoUrl={photoUrl} photoFilter={photoFilter} leadingEraLabel={leadingEraLabel} credit={credit} />
       <ScoreRow result={result} eraId={leadingEraId} />
       <EraBarsPanel result={result} />
       <CardFooter result={result} />
@@ -154,6 +216,8 @@ function PortraitBody({
   result,
   art,
   quote,
+  photoUrl,
+  photoFilter,
   leadingEraId,
   leadingEraLabel,
   credit,
@@ -161,6 +225,8 @@ function PortraitBody({
   result: QuizResult;
   art: EraArt | null;
   quote: EraQuote | null;
+  photoUrl?: string | null;
+  photoFilter: PhotoFilter;
   leadingEraId?: string;
   leadingEraLabel?: string;
   credit: string | null;
@@ -168,7 +234,7 @@ function PortraitBody({
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2 p-4">
       <CardHeader />
-      <ImageBlock art={art} leadingEraLabel={leadingEraLabel} credit={credit} />
+      <ImageBlock art={art} photoUrl={photoUrl} photoFilter={photoFilter} leadingEraLabel={leadingEraLabel} credit={credit} />
       {quote && <QuoteBlock quote={quote} compact />}
       <ScoreRow result={result} eraId={leadingEraId} />
       <EraBarsPanel result={result} />
@@ -181,12 +247,16 @@ function StoryBody({
   result,
   art,
   quote,
+  photoUrl,
+  photoFilter,
   leadingEraLabel,
   credit,
 }: {
   result: QuizResult;
   art: EraArt | null;
   quote: EraQuote | null;
+  photoUrl?: string | null;
+  photoFilter: PhotoFilter;
   leadingEraLabel?: string;
   credit: string | null;
 }) {
@@ -211,7 +281,7 @@ function StoryBody({
         <p className="mx-auto max-w-[430px] text-xs leading-[1.5] text-ink-soft">{result.label.sub_bn}</p>
       </div>
 
-      <ImageBlock art={art} leadingEraLabel={leadingEraLabel} credit={credit} />
+      <ImageBlock art={art} photoUrl={photoUrl} photoFilter={photoFilter} leadingEraLabel={leadingEraLabel} credit={credit} />
 
       {quote && <QuoteBlock quote={quote} />}
       <EraBarsPanel result={result} />
@@ -244,15 +314,26 @@ function CardHeader({ compact = false }: { compact?: boolean }) {
   );
 }
 
+/**
+ * Era artwork by default; a personal photo replaces it entirely (no license
+ * caption then). Falls back to nothing when neither is available.
+ */
 function ImageBlock({
   art,
+  photoUrl,
+  photoFilter,
   leadingEraLabel,
   credit,
 }: {
   art: EraArt | null;
+  photoUrl?: string | null;
+  photoFilter: PhotoFilter;
   leadingEraLabel?: string;
   credit: string | null;
 }) {
+  if (photoUrl) {
+    return <UserPhoto src={photoUrl} filter={photoFilter} badge={leadingEraLabel} className="min-h-0 flex-1" />;
+  }
   if (!art) return null;
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-1">
@@ -262,6 +343,53 @@ function ImageBlock({
       </p>
     </div>
   );
+}
+
+/** Personal photo frame with a retro film filter and era badge. */
+function UserPhoto({
+  src,
+  filter,
+  badge,
+  className = "",
+}: {
+  src: string;
+  filter: PhotoFilter;
+  badge?: string;
+  className?: string;
+}) {
+  return (
+    <div className={`relative overflow-hidden rounded-xl border-[3px] border-ink bg-brand-deep ${className}`}>
+      {/* eslint-disable-next-line @next/next/no-img-element -- user-supplied data URL, not an optimized asset */}
+      <img
+        src={src}
+        alt="নিজের ছবি"
+        className="absolute inset-0 h-full w-full object-cover"
+        style={filter === "none" ? undefined : { filter: PHOTO_FILTER_CSS[filter] }}
+      />
+      {filter !== "none" && <RetroOverlay kind={filter} />}
+      {badge && (
+        <span className="absolute left-1.5 top-1.5 rounded-full border border-paper/60 bg-ink/80 px-2 py-0.5 text-[10px] font-bold text-paper">
+          {badge}
+        </span>
+      )}
+    </div>
+  );
+}
+
+/** Period texture over the photo: warm glow + vignette (80s) or VHS scanlines + cool vignette (90s). */
+function RetroOverlay({ kind }: { kind: "80s" | "90s" }) {
+  const background =
+    kind === "80s"
+      ? [
+          "radial-gradient(circle at 50% 40%, rgba(255,205,130,0.16), rgba(255,205,130,0) 62%)",
+          "radial-gradient(circle, rgba(0,0,0,0) 58%, rgba(88,52,18,0.32) 100%)",
+        ].join(", ")
+      : [
+          "repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0 1px, rgba(0,0,0,0) 1px 3px)",
+          "linear-gradient(120deg, rgba(255,80,180,0.06), rgba(80,220,255,0.06))",
+          "radial-gradient(circle, rgba(0,0,0,0) 60%, rgba(20,40,90,0.28) 100%)",
+        ].join(", ");
+  return <div aria-hidden="true" className="pointer-events-none absolute inset-0" style={{ background }} />;
 }
 
 function EraImage({
