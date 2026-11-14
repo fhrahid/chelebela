@@ -445,15 +445,17 @@ function VideoChannel({
 function BatabiLebuChannel() {
   const captions = [
     "বাতাবি লেবু",
-    "ভিটামিন সি-এর ভাণ্ডার",
-    "রসে ভরপুর, শরীরে সবৃদ্ধ",
-    "আগে খোসা, তারপর ফালি",
+    "ভিটামিন সি-তে ভরপুর",
+    "মোটা খোসা, রসালো কোয়া",
+    "খোসা ছাড়িয়ে কোয়া খাও",
   ];
   return (
     <div className="absolute inset-0 overflow-hidden bg-[#24403b]">
       {/* studio spotlight */}
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_38%,rgba(250,241,221,0.22),transparent_60%)]" aria-hidden="true" />
-      <p className="absolute left-2 top-2 rounded bg-ink/60 px-1.5 py-0.5 text-[10px] font-bold text-paper/90">শিক্ষামূলক ফিলার</p>
+      <p className="absolute left-2 top-2 rounded border border-paper/40 bg-ink/70 px-2 py-1 font-display text-xs font-bold text-paper">
+        বাতাবি লেবু
+      </p>
 
       {/* the fruit, with a slow documentary zoom */}
       <div className="absolute inset-x-0 top-[16%] flex justify-center">
@@ -474,11 +476,11 @@ function BatabiLebuChannel() {
       <div className="absolute inset-x-8 bottom-[34%] h-1.5 rounded bg-wood/70" aria-hidden="true" />
 
       {/* classic caption bar, cycling like the narrator's lines */}
-      <div className="absolute inset-x-4 bottom-5 h-9 overflow-hidden rounded border-2 border-paper/40 bg-ink/85" aria-hidden="true">
+      <div className="absolute inset-x-2 bottom-4 flex h-10 items-center justify-center overflow-hidden rounded border-2 border-paper/60 bg-ink/90 px-1" aria-hidden="true">
         {captions.map((c, i) => (
           <p
             key={c}
-            className="absolute inset-0 flex items-center justify-center font-display text-base font-bold text-[#ffe08a]"
+            className="absolute inset-0 flex items-center justify-center whitespace-nowrap px-1 text-center font-display text-[clamp(10px,3.2vw,14px)] font-bold leading-[1.35] text-[#ffe08a]"
             style={{ animation: `caption-cycle 12s ease-in-out ${i * 3}s infinite` }}
           >
             {c}
