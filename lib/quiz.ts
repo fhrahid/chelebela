@@ -4,8 +4,8 @@
  * Rationale: a 180-item checklist is exhausting (quiz-fatigue). Each session now
  * samples a player-selected number of random items from one era set (or the "mix" tape = all
  * items). Membership rule: an item belongs to an era set when era_tags includes
- * that era — multi-era items are members of each tagged era set (matches how the
- * data models overlapping popularity; see FLG-DS-16 for the tagging caveat).
+ * that era — multi-era items are members of each tagged era set. An optional
+ * category filter is intersected with that pool before sampling.
  *
  * Sampling is seeded-random so tests are deterministic; presentation order is
  * the sampled (shuffled) order, while the comparison codec always encodes in
@@ -45,12 +45,14 @@ export function getEraSet(setId: string | undefined | null): EraSet | null {
   return ERA_SETS.find((s) => s.id === setId) ?? null;
 }
 
-/** Items eligible for a set (era membership; retired/draft-filterable later). */
-export function setPool(setId: string, items: MemoryItem[]): MemoryItem[] {
+/** Items eligible for an era set, optionally narrowed to one content category. */
+export function setPool(setId: string, items: MemoryItem[], categoryId?: string | null): MemoryItem[] {
   const set = getEraSet(setId);
   if (!set) return [];
-  if (!set.era) return [...items];
-  return items.filter((i) => i.era_tags.includes(set.era as string));
+  return items.filter((item) =>
+    (!set.era || item.era_tags.includes(set.era)) &&
+    (!categoryId || item.category_id === categoryId)
+  );
 }
 
 /** Deterministic PRNG (mulberry32) so sessions can be replayed in tests. */
@@ -71,15 +73,18 @@ export function sampleQuiz(
   items: MemoryItem[],
   count: number = DEFAULT_QUIZ_LENGTH,
   seed?: number,
-  seenIds: string[] = []
+  seenIds: string[] = [],
+  categoryId?: string | null,
 ): { items: MemoryItem[]; ids: string[] } {
   const rng = seed === undefined ? Math.random : mulberry32(seed);
-  const fullPool = setPool(setId, items);
+  const fullPool = setPool(setId, items, categoryId);
   const seen = new Set(seenIds);
   // Avoid repeats from previous completed quizzes in this era set where
-  // possible. Once the unseen pool is exhausted, refill from the full pool.
+  // possible for a partial sample. "All" always means every filtered item.
   const unseenPool = fullPool.filter((item) => !seen.has(item.item_id));
-  const pool = unseenPool.length >= Math.min(count, fullPool.length)
+  const pool = count === ALL_QUESTIONS_COUNT
+    ? [...fullPool]
+    : unseenPool.length >= Math.min(count, fullPool.length)
     ? unseenPool
     : [...unseenPool, ...fullPool.filter((item) => seen.has(item.item_id))];
   // Fisher–Yates with the provided rng
@@ -87,7 +92,7 @@ export function sampleQuiz(
     const j = Math.floor(rng() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  const requestedCount = count === ALL_QUESTIONS_COUNT ? pool.length : Math.max(0, count);
+  const requestedCount = count === ALL_QUESTIONS_COUNT ? fullPool.length : Math.max(0, count);
   const picked = pool.slice(0, requestedCount);
   return { items: picked, ids: picked.map((i) => i.item_id) };
 }

@@ -14,6 +14,7 @@ const resultSchema = z.object({
   responses: z.record(responseValue),
   askedIds: z.array(itemId).optional(),
   setId: z.string().optional(),
+  categoryId: z.string().min(1).optional(),
   questionCount: z.number().int().positive().optional(),
   eraArtId: z.string().min(1).optional(),
   eraQuoteId: z.string().min(1).optional(),
@@ -65,6 +66,7 @@ export interface StoredResult {
   responses: Responses;
   askedIds?: string[];
   setId?: string;
+  categoryId?: string;
   questionCount?: number;
   eraArtId?: string;
   eraQuoteId?: string;
@@ -92,11 +94,19 @@ export const quizStorage = {
       return null;
     }
   },
-  saveResult(responses: Responses, askedIds: string[], setId: string, eraArtId?: string, eraQuoteId?: string): void {
+  saveResult(
+    responses: Responses,
+    askedIds: string[],
+    setId: string,
+    eraArtId?: string,
+    eraQuoteId?: string,
+    categoryId?: string,
+  ): void {
     safeSet(KEYS.result, JSON.stringify({
       responses,
       askedIds,
       setId,
+      ...(categoryId ? { categoryId } : {}),
       questionCount: askedIds.length,
       ...(eraArtId ? { eraArtId } : {}),
       ...(eraQuoteId ? { eraQuoteId } : {}),

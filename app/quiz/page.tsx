@@ -15,6 +15,7 @@ import Link from "next/link";
 import { ArrowLeft, ArrowRight, ChevronDown, Home, X } from "lucide-react";
 import AlponaFlower from "@/components/AlponaFlower";
 import CassetteArtwork from "@/components/CassetteArtwork";
+import CategorySelect from "@/components/CategorySelect";
 import { CONTENT_REVIEW_NOTE, DEFAULT_DATASET, TOTAL_ITEMS } from "@/lib/data";
 import { ALL_QUESTIONS_COUNT, answeredTooFast, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, getEraSet, sampleQuiz, setPool } from "@/lib/quiz";
 import { quizStorage } from "@/lib/storage";
@@ -40,6 +41,7 @@ function QuizFlow() {
 
   const [phase, setPhase] = useState<Phase>("select");
   const [setId, setSetId] = useState<string | null>(null);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
   const [quizItems, setQuizItems] = useState<MemoryItem[]>([]);
   const [responses, setResponses] = useState<Responses>({});
   const [index, setIndex] = useState(0);
@@ -52,10 +54,12 @@ function QuizFlow() {
   const answerLockRef = useRef(false);
   const answerTimesRef = useRef<number[]>([]);
 
-  const startSet = useCallback((id: string, count: number) => {
+  const startSet = useCallback((id: string, count: number, selectedCategoryId: string | null) => {
     const seen = [...new Set(Object.values(quizStorage.loadSeenIds()).flat())];
-    const { items } = sampleQuiz(id, DEFAULT_DATASET.items, count, undefined, seen);
+    const { items } = sampleQuiz(id, DEFAULT_DATASET.items, count, undefined, seen, selectedCategoryId);
+    if (items.length === 0) return;
     setSetId(id);
+    setCategoryId(selectedCategoryId);
     setQuizItems(items);
     setResponses({});
     setIndex(0);
@@ -76,17 +80,22 @@ function QuizFlow() {
     quizStorage.clearProgress();
     const deepLink = getEraSet(search.get("set"));
     if (deepLink) {
+      const requestedCategory = search.get("category");
+      const deepLinkCategory = DEFAULT_DATASET.categories.some((category) => category.category_id === requestedCategory)
+        ? requestedCategory
+        : null;
       const countParam = Number(search.get("count"));
       const count = countParam === ALL_QUESTIONS_COUNT || (Number.isInteger(countParam) && countParam >= 1 && countParam <= TOTAL_ITEMS)
         ? countParam
         : DEFAULT_QUIZ_LENGTH;
-      startSet(deepLink.id, count);
+      startSet(deepLink.id, count, deepLinkCategory);
     }
     // Deliberately run once on entry.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const set = getEraSet(setId);
+  const category = DEFAULT_DATASET.categories.find((item) => item.category_id === categoryId);
   const answered = Object.keys(responses).length;
   const total = quizItems.length;
   const current = quizItems[index];
@@ -113,7 +122,7 @@ function QuizFlow() {
           const leadingEra = finalResult.eraProfile[0]?.era_id ?? getEraSet(setId)?.era;
           const art = randomEraArt(leadingEra);
           const quote = randomEraQuote(leadingEra);
-          quizStorage.saveResult(nextResponses, askedIds, setId, art?.art_id, quote?.quote_id);
+          quizStorage.saveResult(nextResponses, askedIds, setId, art?.art_id, quote?.quote_id, categoryId ?? undefined);
           quizStorage.addSeenIds(setId, Object.keys(nextResponses));
           quizStorage.clearProgress();
           router.push("/result");
@@ -141,11 +150,19 @@ function QuizFlow() {
         }, 260);
       }
     },
-    [current, responses, setId, quizItems, total, router]
+    [current, responses, setId, categoryId, quizItems, total, router]
   );
 
   if (phase === "select") {
-    return <SetSelect onPick={startSet} questionCount={questionCount} onCountChange={setQuestionCount} />;
+    return (
+      <SetSelect
+        onPick={startSet}
+        questionCount={questionCount}
+        onCountChange={setQuestionCount}
+        categoryId={categoryId}
+        onCategoryChange={setCategoryId}
+      />
+    );
   }
 
   return (
@@ -166,6 +183,7 @@ function QuizFlow() {
             <p className="font-display text-sm font-extrabold">
               {set?.label_bn} <span className="font-sans text-xs font-normal text-ink-soft">ক্যাসেট</span>
             </p>
+            {category && <p className="text-[11px] font-semibold text-brand">{category.name_bn} বিষয়</p>}
             <p className="text-[11px] font-bold text-ink-soft">
               প্রশ্ন {toBn(index + 1)}/{toBn(total)}
             </p>
@@ -299,16 +317,20 @@ function SetSelect({
   onPick,
   questionCount,
   onCountChange,
+  categoryId,
+  onCategoryChange,
 }: {
-  onPick: (id: string, count: number) => void;
+  onPick: (id: string, count: number, categoryId: string | null) => void;
   questionCount: number;
   onCountChange: (count: number) => void;
+  categoryId: string | null;
+  onCategoryChange: (categoryId: string | null) => void;
 }) {
   return (
     <div className="mx-auto max-w-2xl px-4 pb-16 pt-8">
       <h1 className="text-center font-display text-3xl font-extrabold">কোন ক্যাসেটটা বাজাবে?</h1>
       <p className="mx-auto mt-2 max-w-md text-center text-sm leading-relaxed text-ink-soft">
-        ক্যাসেট বেছে নাও, তারপর কতগুলো প্রশ্নের উত্তর দেবে ঠিক করো। প্রতিবার নতুন এলোমেলো স্মৃতি আসবে।
+        বিষয় আর ক্যাসেট বেছে নাও, তারপর কতগুলো প্রশ্নের উত্তর দেবে ঠিক করো। প্রতিবার ওই বাছাইয়ের মধ্য থেকেই এলোমেলো স্মৃতি আসবে।
       </p>
       <fieldset className="mx-auto mt-5 max-w-md">
         <legend className="mb-2 w-full text-center font-display font-bold">কতগুলো প্রশ্ন খেলবে?</legend>
@@ -328,19 +350,23 @@ function SetSelect({
           ))}
         </div>
         <p className="mt-2 text-center text-xs text-ink-soft">
-          “সব” বাছলে নির্বাচিত ক্যাসেটের সব স্মৃতি আসবে। বেশি প্রশ্নে ফলের অনুমান আরও নির্ভরযোগ্য হয়।
+          “সব” বাছলে নির্বাচিত বিষয় ও ক্যাসেটের সব স্মৃতি আসবে। বেশি প্রশ্নে ফলের অনুমান আরও নির্ভরযোগ্য হয়।
         </p>
       </fieldset>
+      <div className="mt-5">
+        <CategorySelect value={categoryId} onChange={onCategoryChange} />
+      </div>
       <div className="mt-8 grid gap-4 sm:grid-cols-2">
         {ERA_SETS.map((s) => {
-          const count = setPool(s.id, DEFAULT_DATASET.items).length;
+          const count = setPool(s.id, DEFAULT_DATASET.items, categoryId).length;
           const shell = s.id === "80s" ? "#C7C0AF" : s.id === "90s" ? "#D4C5A5" : s.id === "2000s" ? "#9CA49A" : "#D5B9A0";
           return (
             <button
               key={s.id}
               type="button"
-              onClick={() => onPick(s.id, questionCount)}
-              className="group rounded-2xl border-2 border-ink bg-paper-card p-4 text-left shadow-hard-sm transition-transform hover:-translate-y-1"
+              onClick={() => onPick(s.id, questionCount, categoryId)}
+              disabled={count === 0}
+              className="group rounded-2xl border-2 border-ink bg-paper-card p-4 text-left shadow-hard-sm transition-transform hover:-translate-y-1 disabled:cursor-not-allowed disabled:opacity-50"
             >
               <div className="rounded-xl border-2 border-ink p-2" style={{ backgroundColor: `${s.color}22` }}>
                 <div className="mb-1 flex items-center justify-between px-1">

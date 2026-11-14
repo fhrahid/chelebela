@@ -29,6 +29,7 @@ export default function ResultPage() {
   const [responses, setResponses] = useState<Responses | null>(null);
   const [askedIds, setAskedIds] = useState<string[] | undefined>(undefined);
   const [setId, setSetId] = useState<string | undefined>(undefined);
+  const [categoryId, setCategoryId] = useState<string | undefined>(undefined);
   const [pendingCompare, setPendingCompare] = useState<string | null>(null);
   const [displayScore, setDisplayScore] = useState(0);
   const [resultArt, setResultArt] = useState<EraArt | null>(null);
@@ -40,6 +41,7 @@ export default function ResultPage() {
       setResponses(stored.responses);
       setAskedIds(stored.askedIds);
       setSetId(stored.setId);
+      setCategoryId(stored.categoryId);
       const storedResult = computeResult(stored.responses, DEFAULT_DATASET, { askedItemIds: stored.askedIds });
       const leadingEra = storedResult.eraProfile[0]?.era_id ?? getEraSet(stored.setId)?.era;
       const chosenArt = eraArtById(stored.eraArtId) ?? randomEraArt(leadingEra);
@@ -105,6 +107,7 @@ export default function ResultPage() {
   }
 
   const set = getEraSet(setId);
+  const selectedCategory = DEFAULT_DATASET.categories.find((category) => category.category_id === categoryId);
   const dominantEra = result.eraProfile[0]?.era_id ?? set?.era;
   const eraArt = resultArt;
 
@@ -129,7 +132,8 @@ export default function ResultPage() {
       <section className="rounded-2xl border-2 border-ink bg-paper-card p-6 text-center shadow-hard">
         {set && (
           <p className="inline-flex items-center gap-1.5 rounded-full border-2 border-ink px-3 py-1 text-xs font-bold" style={{ backgroundColor: `${set.color}33` }}>
-            <Disc3 className="h-3.5 w-3.5" aria-hidden="true" /> {set.label_bn} ক্যাসেট · {toBn(result.totalItems)}টি প্রশ্ন
+            <Disc3 className="h-3.5 w-3.5" aria-hidden="true" /> {set.label_bn} ক্যাসেট
+            {selectedCategory ? ` · ${selectedCategory.name_bn}` : ""} · {toBn(result.totalItems)}টি প্রশ্ন
           </p>
         )}
         <p className="mt-3 flex items-center justify-center gap-2 text-xs font-bold text-ink-soft">

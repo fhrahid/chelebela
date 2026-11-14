@@ -18,6 +18,20 @@ describe("era sets", () => {
     expect(setPool("mix", ITEMS)).toHaveLength(ITEMS.length);
     expect(setPool("bogus", ITEMS)).toHaveLength(0);
   });
+
+  it("intersects a selected category with every era instead of sampling other categories", () => {
+    for (const set of ERA_SETS) {
+      const foodPool = setPool(set.id, ITEMS, "food");
+      expect(foodPool.length).toBeGreaterThan(0);
+      for (const item of foodPool) {
+        expect(item.category_id).toBe("food");
+        if (set.era) expect(item.era_tags).toContain(set.era);
+      }
+      const sample = sampleQuiz(set.id, ITEMS, 80, 42, [], "food");
+      expect(sample.items).toHaveLength(foodPool.length);
+      expect(sample.items.every((item) => item.category_id === "food")).toBe(true);
+    }
+  });
 });
 
 describe("random sampling", () => {
@@ -69,6 +83,13 @@ describe("random sampling", () => {
     expect(sampleQuiz("mix", ITEMS, 30).items).toHaveLength(30);
     expect(sampleQuiz("mix", ITEMS, ALL_QUESTIONS_COUNT).items).toHaveLength(ITEMS.length);
     expect(sampleQuiz("2000s", ITEMS, 180).items).toHaveLength(setPool("2000s", ITEMS).length);
+  });
+
+  it("all questions includes the full selected category even if previously seen", () => {
+    const foodPool = setPool("90s", ITEMS, "food");
+    const sample = sampleQuiz("90s", ITEMS, ALL_QUESTIONS_COUNT, 42, foodPool.map((item) => item.item_id), "food");
+    expect(sample.items).toHaveLength(foodPool.length);
+    expect(sample.items.every((item) => item.category_id === "food")).toBe(true);
   });
 
   it("avoids previously seen questions until the pool is exhausted", () => {

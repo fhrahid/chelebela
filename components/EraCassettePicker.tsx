@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import AlponaFlower from "@/components/AlponaFlower";
 import CassetteArtwork from "@/components/CassetteArtwork";
+import CategorySelect from "@/components/CategorySelect";
 import { ITEMS } from "@/lib/data";
 import { ALL_QUESTIONS_COUNT, COUNT_OPTIONS, DEFAULT_QUIZ_LENGTH, ERA_SETS, setPool } from "@/lib/quiz";
 import { toBn } from "@/lib/bn";
@@ -26,6 +27,7 @@ const FLOWER_COLORS: Record<string, string> = {
 /** Home-page cassette chooser: amount + era in one step, then straight to quiz. */
 export default function EraCassettePicker() {
   const [questionCount, setQuestionCount] = useState<number>(DEFAULT_QUIZ_LENGTH);
+  const [categoryId, setCategoryId] = useState<string | null>(null);
 
   return (
     <div>
@@ -47,16 +49,21 @@ export default function EraCassettePicker() {
           ))}
         </div>
         <p className="mt-2 text-center text-xs text-ink-soft">
-          “সব” বাছলে ওই ক্যাসেটের পুরো প্রশ্নপুল আসবে।
+          “সব” বাছলে বেছে নেওয়া ক্যাসেট ও বিষয়ের সব প্রশ্ন আসবে।
         </p>
       </fieldset>
 
+      <div className="mt-5">
+        <CategorySelect value={categoryId} onChange={setCategoryId} />
+      </div>
+
       <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {ERA_SETS.map((set) => {
-          const poolCount = setPool(set.id, ITEMS).length;
+          const poolCount = setPool(set.id, ITEMS, categoryId).length;
           const actualCount = questionCount === ALL_QUESTIONS_COUNT
             ? poolCount
             : Math.min(questionCount, poolCount);
+          const categoryParam = categoryId ? `&category=${encodeURIComponent(categoryId)}` : "";
           const eraRange = set.era
             ? set.era === "80s" ? "১৯৮০–৮৯"
               : set.era === "90s" ? "১৯৯০–৯৯"
@@ -66,8 +73,10 @@ export default function EraCassettePicker() {
           return (
             <Link
               key={set.id}
-              href={`/quiz?set=${set.id}&count=${questionCount}`}
-              className="group block h-full rounded-2xl border-2 border-ink bg-paper-card p-3 shadow-hard-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-hard sm:p-4"
+              href={`/quiz?set=${set.id}&count=${questionCount}${categoryParam}`}
+              aria-disabled={poolCount === 0}
+              tabIndex={poolCount === 0 ? -1 : undefined}
+              className={`group block h-full rounded-2xl border-2 border-ink bg-paper-card p-3 shadow-hard-sm transition-transform duration-200 hover:-translate-y-1 hover:shadow-hard sm:p-4 ${poolCount === 0 ? "pointer-events-none opacity-50" : ""}`}
             >
               <div
                 className="rounded-xl border-2 border-ink p-2.5"
