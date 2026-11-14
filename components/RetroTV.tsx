@@ -22,13 +22,14 @@ const CHANNELS = [
   { id: 1, label: "চ্যানেল ১", name_bn: "পরীক্ষা সম্প্রচার" },
   { id: 2, label: "চ্যানেল ২", name_bn: "বাতাবি লেবু" },
   { id: 3, label: "চ্যানেল ৩", name_bn: "সকালের কার্টুন" },
-  { id: 4, label: "চ্যানেল ৪", name_bn: "ক্রিকেট" },
+  { id: 4, label: "চ্যানেল ৪", name_bn: "টম অ্যান্ড জেরি" },
   { id: 5, label: "চ্যানেল ৫", name_bn: "ঈদের শুভেচ্ছা" },
   { id: 6, label: "চ্যানেল ৬", name_bn: "সংবাদ সারসংক্ষেপ" },
   // Real broadcast clips — product-owner decision 2026-11-16 (see README decision log; deviates from SRS NFR-011).
   { id: 7, label: "চ্যানেল ৭", name_bn: "মিনার গান" },
   { id: 8, label: "চ্যানেল ৮", name_bn: "বিটিভির ঘোষণা" },
   { id: 9, label: "চ্যানেল ৯", name_bn: "এটিএন বাংলার সংবাদ" },
+  { id: 10, label: "চ্যানেল ১০", name_bn: "ক্রিকেট" },
 ];
 
 export default function RetroTV() {
@@ -250,12 +251,13 @@ export default function RetroTV() {
               {channel === 1 && <TestCard clock={clock} />}
               {channel === 2 && <BatabiLebuChannel />}
               {channel === 3 && <CartoonChannel />}
-              {channel === 4 && <CricketChannel />}
+              {channel === 4 && <VideoChannel src="/tv/tom-and-jerry.mp4" label="টম অ্যান্ড জেরি" volume={volume} audioUnlocked={audioUnlocked} />}
               {channel === 5 && <EidChannel />}
               {channel === 6 && <NewsChannel clock={clock} />}
               {channel === 7 && <VideoChannel src="/tv/meena-song.mp4" label="মিনার গান" volume={volume} audioUnlocked={audioUnlocked} />}
               {channel === 8 && <VideoChannel src="/tv/btv-announcement.mp4" label="বিটিভির ঘোষণা" volume={volume} audioUnlocked={audioUnlocked} />}
               {channel === 9 && <VideoChannel src="/tv/atn-news.mp4" label="এটিএন বাংলার সংবাদ" volume={volume} audioUnlocked={audioUnlocked} />}
+              {channel === 10 && <CricketChannel />}
             </div>
 
             {/* static overlay */}
